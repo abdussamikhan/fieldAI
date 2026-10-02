@@ -4,11 +4,12 @@ INTER_CSS = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap');
 
-/* Enforce Inter font and non-bold font weight across all UI elements */
-html, body, [class*="css"], [class*="st-"], [data-testid],
-div, span, p, a, button, input, select, textarea, label,
-h1, h2, h3, h4, h5, h6, b, strong, th, td, table, code, pre,
-.stMarkdown, .stButton, .stDownloadButton, [data-testid="stSidebarNav"] {
+/* Apply Inter font across the app via typography inheritance */
+html, body, p, a, input, select, textarea, label,
+h1, h2, h3, h4, h5, h6, b, strong, th, td, table,
+.stMarkdown, .stTextInput, .stSelectbox, .stTextArea,
+[data-testid="stSidebarNav"] span,
+[data-testid*="stMetric"] {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
     font-weight: 400 !important;
 }
@@ -26,9 +27,28 @@ b, strong, th,
     font-family: 'Inter', sans-serif !important;
     font-weight: 400 !important;
 }
+
+/* Preserve Material Symbols and Icon fonts for Streamlit UI buttons and navigation */
+.material-symbols-rounded,
+.material-symbols-outlined,
+.material-icons,
+[class*="material-symbols"],
+[class*="material-icons"],
+[data-testid*="Icon"],
+[data-testid="stSidebarCollapseButton"] *,
+[data-testid="baseButton-headerNoPadding"] *,
+[data-testid="stHeader"] button * {
+    font-family: "Material Symbols Rounded", "Material Symbols Outlined", "Material Icons" !important;
+    font-style: normal !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    word-wrap: normal !important;
+    white-space: nowrap !important;
+    direction: ltr !important;
+}
 </style>
 """
 
 def apply_inter_theme():
-    """Injects global CSS enforcing Inter font and normal (non-bold) weight across all UI features."""
+    """Injects global CSS enforcing Inter font and normal (non-bold) weight across all UI features while preserving icons."""
     st.markdown(INTER_CSS, unsafe_allow_html=True)
