@@ -270,7 +270,14 @@ class LLMClient:
             }
 
         return {
-            "answer": "Based on the internal audit walkthrough and procurement documentation, purchases up to $10,000 require Department Head approval, purchases between $10,001 and $50,000 require Division VP approval, and purchases above $50,000 require CFO authorization with three competitive vendor quotations.",
+            "answer": (
+                "### Executive Summary\n"
+                "Based on the Procure-to-Pay SOP (SOP-FIN-04) and internal audit walkthrough evidence, approval authorities and competitive quotation requirements are tiered based on transaction value.\n\n"
+                "### Key Delegation Limits & Controls\n"
+                "- **Requisitions up to $10,000**: Approved by **Department Head** [SOP-FIN-04 §3.1 p.3].\n"
+                "- **Requisitions $10,001 to $50,000**: Approved by **Division Vice President** [SOP-FIN-04 §3.2 p.3].\n"
+                "- **Requisitions exceeding $50,000**: Requires approval by the **CFO** and a minimum of three independent competitive quotations [SOP-FIN-04 §3.3 p.4]."
+            ),
             "citations": [
                 {"source": "SOP-FIN-04", "locator": "Section 3.1-3.3", "quote": "Requisitions exceeding $50,000 require CFO approval and 3 competitive quotes."}
             ]

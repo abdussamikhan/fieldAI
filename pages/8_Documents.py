@@ -123,8 +123,22 @@ with tab3:
                 "user_id": user["id"]
             })
             res_obj = qa_res.get("doc_qa_result", {})
-            st.info(f"**Answer:** {res_obj.get('answer', '')}")
-            if res_obj.get("citations"):
-                st.markdown("#### Citations:")
-                for c in res_obj["citations"]:
-                    st.caption(f"- **{c.get('source')} ({c.get('locator')}):** \"{c.get('quote')}\"")
+            answer_text = res_obj.get("answer", "")
+            citations = res_obj.get("citations", [])
+
+            with st.container(border=True):
+                st.markdown("### 📋 FieldAI Grounded Analysis")
+                st.markdown(answer_text)
+
+                if citations:
+                    st.divider()
+                    st.markdown("#### 📌 Verified Citations & References")
+                    for c in citations:
+                        c1, c2 = st.columns([1, 2])
+                        with c1:
+                            st.markdown(f"🏷️ **{c.get('source', 'SOP')}**")
+                            st.caption(f"📍 {c.get('locator', 'N/A')}")
+                        with c2:
+                            quote = c.get("quote", "").strip()
+                            if quote:
+                                st.markdown(f"> *\"{quote}\"*")

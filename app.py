@@ -107,12 +107,17 @@ with col_q:
                     "user_id": user["id"]
                 })
                 qa_res = res.get("doc_qa_result", {})
-                st.info(f"**Answer:** {qa_res.get('answer', 'Information retrieved.')}")
+                answer_text = qa_res.get("answer", "Information retrieved.")
                 citations = qa_res.get("citations", [])
-                if citations:
-                    st.caption("📌 **Verified Citations:**")
-                    for cit in citations:
-                        st.caption(f"- *{cit.get('source', '')} ({cit.get('locator', '')})*: \"{cit.get('quote', '')}\"")
+
+                with st.container(border=True):
+                    st.markdown("#### 📋 FieldAI Response")
+                    st.markdown(answer_text)
+                    if citations:
+                        st.divider()
+                        st.caption("📌 **Verified Citations:**")
+                        for cit in citations:
+                            st.caption(f"- **{cit.get('source', '')}** (`{cit.get('locator', '')}`): *\"{cit.get('quote', '')}\"*")
 
 st.divider()
 
