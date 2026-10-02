@@ -259,3 +259,38 @@ def delete_file(file_id: int) -> bool:
 
     count = db.execute("DELETE FROM files WHERE id = %s;", (file_id,))
     return count > 0
+
+def seed_sample_storage_files():
+    """Seeds sample synthetic datasets into Centralized Storage if not already registered."""
+    from pathlib import Path
+    sample_dir = Path("sample_data")
+    if not sample_dir.exists():
+        return
+    
+    samples_to_seed = [
+        ("invoices_extract_1000.csv", "source_documents", "text/csv"),
+        ("user_access_matrix_large.csv", "source_documents", "text/csv"),
+        ("erp_event_log_large.csv", "source_documents", "text/csv"),
+    ]
+    for filename, category, mime_type in samples_to_seed:
+        file_path = sample_dir / filename
+        if file_path.exists():
+            existing = db.fetch_one(
+                "SELECT id FROM files WHERE filename = %s AND category = %s;",
+                (filename, category)
+            )
+            if not existing:
+                try:
+                    with open(file_path, "rb") as f:
+                        data = f.read()
+                    save_file(
+                        filename=filename,
+                        mime_type=mime_type,
+                        data=data,
+                        category=category,
+                        process_id=1,
+                        created_by=1
+                    )
+                except Exception as e:
+                    print(f"[Storage] Could not auto-seed {filename}: {e}")
+

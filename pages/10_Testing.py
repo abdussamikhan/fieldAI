@@ -1,11 +1,14 @@
 import streamlit as st
 import pandas as pd
+from pathlib import Path
 from core.db import db
 from core.model_repo import get_process
 from core.agent_registry import render_active_agent_pill, render_deliverable_attribution
+from core.ui import apply_inter_theme
 from graphs.orchestrator import run_task
 
 st.set_page_config(page_title="Audit Testing & Analytics · FieldAI", page_icon="🔬", layout="wide")
+apply_inter_theme()
 
 if not st.session_state.get("user"):
     st.warning("Please sign in from the main page.")
@@ -40,28 +43,59 @@ with t1:
         st.caption(f"**Test Description:** {selected_an.get('description', '')}")
 
     with c_up:
-        data_file = st.file_uploader("Upload Transaction Dataset (CSV / Excel)", type=["csv", "xlsx"])
-        use_sample = st.checkbox("Or use built-in sample procurement invoice extract", value=True)
+        data_source = st.radio(
+            "Transaction Data Source:",
+            ["Persistent Sample: 1,000 Procurement Invoices (Centralized Storage)", "Upload Custom Dataset (CSV / Excel)"],
+            horizontal=True
+        )
+        data_file = None
+        if "Upload" in data_source:
+            data_file = st.file_uploader("Upload Transaction Dataset", type=["csv", "xlsx"])
 
     df_test = None
     if data_file:
         df_test = pd.read_csv(data_file) if data_file.name.endswith(".csv") else pd.read_excel(data_file)
-    elif use_sample:
-        df_test = pd.read_csv("sample_data/invoices_extract.csv")
+    else:
+        # Load 1,000 records persistent sample
+        candidates = [
+            Path("sample_data/invoices_extract_1000.csv"),
+            Path("sample_data/invoices_extract.csv")
+        ]
+        for p in candidates:
+            if p.exists():
+                try:
+                    df_test = pd.read_csv(p)
+                    break
+                except Exception:
+                    pass
 
     if df_test is not None:
-        st.write(f"**Loaded Dataset:** {len(df_test)} transactions")
-        with st.expander("Preview Dataset"):
-            st.dataframe(df_test.head(6), use_container_width=True)
+        total_amt = df_test["amount"].sum() if "amount" in df_test.columns else 0.0
+        uniq_vendors = df_test["vendor_id"].nunique() if "vendor_id" in df_test.columns else 0
+        min_date = str(df_test["date"].min())[:10] if "date" in df_test.columns else "N/A"
+        max_date = str(df_test["date"].max())[:10] if "date" in df_test.columns else "N/A"
+
+        m_c1, m_c2, m_c3, m_c4 = st.columns(4)
+        with m_c1:
+            st.metric("Total Transactions", f"{len(df_test):,}")
+        with m_c2:
+            st.metric("Population Spend", f"${total_amt:,.2f}")
+        with m_c3:
+            st.metric("Active Vendors", uniq_vendors)
+        with m_c4:
+            st.metric("Date Span", f"{min_date} to {max_date}")
+
+        with st.expander(f"Preview Dataset ({len(df_test):,} Records · Centralized Storage Sample)", expanded=False):
+            st.dataframe(df_test.head(10), use_container_width=True)
 
         col_run1, col_run2 = st.columns([1, 2])
         with col_run1:
-            run_btn = st.button("🚀 Execute Analytics Test", type="primary")
+            run_btn = st.button("🚀 Execute Analytics Test", type="primary", key="btn_run_an")
         with col_run2:
-            make_rec = st.checkbox("Schedule as recurring continuous monitoring test", value=False)
+            make_rec = st.checkbox("Schedule as recurring continuous monitoring test", value=False, key="chk_rec_an")
 
         if run_btn:
-            render_active_agent_pill("analytics_agent", f"Executing {selected_an_id} algorithms on full transaction dataset...")
+            render_active_agent_pill("analytics_agent", f"Executing {selected_an_id} algorithms on full transaction dataset ({len(df_test)} rows)...")
             with st.spinner(f"Running {selected_an_id} algorithms..."):
                 res = run_task("run_test", {
                     "task": "run_test",
@@ -89,8 +123,49 @@ with t2:
     st.subheader("🛡️ User Access & Segregation of Duties (SoD) Analysis")
     render_deliverable_attribution("sod_agent", "Segregation of Duties Conflict Analysis")
     st.markdown("Identifies toxic combinations of user privileges across procurement, disbursement, and master file administration.")
-    
-    if st.button("Run SoD Conflict Analysis on User Access Matrix"):
+
+    c_sod_src, c_sod_meta = st.columns([1.5, 1.5])
+    with c_sod_src:
+        sod_src = st.radio(
+            "User Access Matrix Source:",
+            ["Persistent Sample: Enterprise Access Matrix (80 Users, 120 Roles - Centralized Storage)", "Upload Custom Access Matrix (CSV / Excel)"],
+            horizontal=True,
+            key="rad_sod_src"
+        )
+    sod_file = None
+    if "Upload" in sod_src:
+        with c_sod_meta:
+            sod_file = st.file_uploader("Upload User Access Matrix", type=["csv", "xlsx"], key="up_sod_file")
+
+    df_sod_data = None
+    if sod_file:
+        df_sod_data = pd.read_csv(sod_file) if sod_file.name.endswith(".csv") else pd.read_excel(sod_file)
+    else:
+        for p in [Path("sample_data/user_access_matrix_large.csv"), Path("sample_data/user_access_matrix.csv")]:
+            if p.exists():
+                try:
+                    df_sod_data = pd.read_csv(p)
+                    break
+                except Exception:
+                    pass
+
+    if df_sod_data is not None:
+        total_assignments = len(df_sod_data)
+        unique_users = df_sod_data["user_id"].nunique() if "user_id" in df_sod_data.columns else len(df_sod_data)
+        dept_cnt = df_sod_data["department"].nunique() if "department" in df_sod_data.columns else 1
+
+        sm1, sm2, sm3 = st.columns(3)
+        with sm1:
+            st.metric("Total Users Evaluated", unique_users)
+        with sm2:
+            st.metric("Role Assignments", total_assignments)
+        with sm3:
+            st.metric("Covered Departments", dept_cnt)
+
+        with st.expander(f"Preview User Access Matrix ({total_assignments} assignments across {unique_users} users)", expanded=False):
+            st.dataframe(df_sod_data.head(10), use_container_width=True)
+
+    if st.button("🚀 Run SoD Conflict Analysis on User Access Matrix", type="primary", key="btn_run_sod"):
         render_active_agent_pill("sod_agent", "Evaluating user privilege matrix against toxic SoD rule catalog...")
         with st.spinner("Analyzing user permissions against SoD rule matrix..."):
             sod_res = run_task("run_test", {
@@ -98,14 +173,25 @@ with t2:
                 "process_id": process_id,
                 "user_id": user["id"],
                 "test_request": {
-                    "test_type": "sod"
+                    "test_type": "sod",
+                    "user_access": df_sod_data
                 }
             })
             conflicts = sod_res.get("sod_conflicts", [])
             st.warning(sod_res.get("summary", "Analysis complete."))
             for c in conflicts:
-                st.error(f"⚠️ **{c.get('user_name')} ({c.get('user_id')}):** {c.get('risk')} [Severity: {c.get('severity')}]")
-                st.caption(f"Assigned Roles: {', '.join(c.get('conflicting_roles', []))} | Impacted Lanes: {', '.join(c.get('impacted_lanes', []))}")
+                badge_color = "#ef4444" if c.get("severity") == "Critical" else "#f59e0b"
+                st.markdown(f"""
+                <div style="border-left: 4px solid {badge_color}; padding-left: 12px; margin-bottom: 12px; background: rgba(255,255,255,0.02); padding: 8px 12px; border-radius: 4px;">
+                    <div style="font-size: 14px; font-weight: 500;">
+                        ⚠️ <strong>{c.get('user_name')}</strong> ({c.get('user_id')}) &bull; <span style="color: {badge_color}; font-size: 12px; text-transform: uppercase;">[{c.get('rule_code')} &bull; Severity: {c.get('severity')}]</span>
+                    </div>
+                    <div style="font-size: 13px; color: #94a3b8; margin-top: 4px;">{c.get('risk')}</div>
+                    <div style="font-size: 12px; color: #64748b; margin-top: 4px;">
+                        <strong>Assigned Roles:</strong> {', '.join(c.get('conflicting_roles', []))} | <strong>Impacted Lanes:</strong> {', '.join(c.get('impacted_lanes', []))}
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
 
 # Tab 3: Process Mining
 with t3:
@@ -113,7 +199,48 @@ with t3:
     render_deliverable_attribution("process_mining_agent", "Event Log Conformance & Path Variance Analysis")
     st.markdown("Reconstructs actual transaction journeys from system event logs and flags path deviations where key controls were skipped.")
 
-    if st.button("Mine Process Variants from ERP Event Log"):
+    c_pm_src, c_pm_meta = st.columns([1.5, 1.5])
+    with c_pm_src:
+        pm_src = st.radio(
+            "ERP Event Log Source:",
+            ["Persistent Sample: P2P ERP Event Log (100 Cases, 569 Events - Centralized Storage)", "Upload Custom ERP Event Log (CSV / Excel)"],
+            horizontal=True,
+            key="rad_pm_src"
+        )
+    pm_file = None
+    if "Upload" in pm_src:
+        with c_pm_meta:
+            pm_file = st.file_uploader("Upload ERP Event Log", type=["csv", "xlsx"], key="up_pm_file")
+
+    df_pm_data = None
+    if pm_file:
+        df_pm_data = pd.read_csv(pm_file) if pm_file.name.endswith(".csv") else pd.read_excel(pm_file)
+    else:
+        for p in [Path("sample_data/erp_event_log_large.csv"), Path("sample_data/erp_event_log.csv")]:
+            if p.exists():
+                try:
+                    df_pm_data = pd.read_csv(p)
+                    break
+                except Exception:
+                    pass
+
+    if df_pm_data is not None:
+        tot_events = len(df_pm_data)
+        tot_cases = df_pm_data["case_id"].nunique() if "case_id" in df_pm_data.columns else 0
+        tot_acts = df_pm_data["activity"].nunique() if "activity" in df_pm_data.columns else 0
+
+        pmm1, pmm2, pmm3 = st.columns(3)
+        with pmm1:
+            st.metric("Total Cases (POs)", tot_cases)
+        with pmm2:
+            st.metric("Total Audit Events Logged", f"{tot_events:,}")
+        with pmm3:
+            st.metric("Distinct Lifecycle Activities", tot_acts)
+
+        with st.expander(f"Preview ERP Event Log ({tot_events:,} events across {tot_cases} cases)", expanded=False):
+            st.dataframe(df_pm_data.head(10), use_container_width=True)
+
+    if st.button("🚀 Mine Process Variants from ERP Event Log", type="primary", key="btn_run_pm"):
         render_active_agent_pill("process_mining_agent", "Reconstructing transaction pathways and identifying bypasses...")
         with st.spinner("Calculating execution variants and checking control gates..."):
             mining_res = run_task("run_test", {
@@ -121,22 +248,30 @@ with t3:
                 "process_id": process_id,
                 "user_id": user["id"],
                 "test_request": {
-                    "test_type": "process_mining"
+                    "test_type": "process_mining",
+                    "event_log": df_pm_data
                 }
             })
             pm_data = mining_res.get("process_mining", {})
-            st.write(f"**Total Processed Cases:** {pm_data.get('total_cases')} | **Distinct Flow Variants:** {pm_data.get('distinct_variants')}")
+            st.write(f"**Total Processed Cases:** {pm_data.get('total_cases')} | **Distinct Flow Variants Identified:** {pm_data.get('distinct_variants')}")
 
             st.markdown("#### Identified Flow Variants:")
             for v in pm_data.get("variants", []):
-                badge = "🟢 Compliant" if v.get("compliant") else "🔴 Control Bypass"
-                st.markdown(f"- **{v.get('variant_flow')}** ({v.get('case_count')} cases, `{v.get('frequency_pct')}%`) – {badge}")
+                badge = "<span style='color: #10b981; font-weight: 500;'>🟢 Compliant Golden Path</span>" if v.get("compliant") else "<span style='color: #ef4444; font-weight: 500;'>🔴 Control Bypass Detected</span>"
+                st.markdown(f"""
+                <div style="background: rgba(255,255,255,0.02); padding: 8px 12px; border-radius: 4px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.06);">
+                    <div style="font-size: 13px;"><code>{v.get('variant_flow')}</code></div>
+                    <div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">
+                        {v.get('case_count')} cases ({v.get('frequency_pct')}%) &bull; {badge}
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
 
             bypasses = pm_data.get("bypassed_cases", [])
             if bypasses:
                 st.markdown("#### 🚨 Bypassed Control Cases:")
-                for b in bypasses:
-                    st.error(f"Case **{b.get('case_id')}**: {b.get('reason')}")
+                b_df = pd.DataFrame(bypasses)
+                st.dataframe(b_df, use_container_width=True)
 
 # Tab 4: Evidence Reader
 with t4:

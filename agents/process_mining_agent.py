@@ -12,7 +12,17 @@ def run(state: FieldAIState) -> Dict[str, Any]:
     event_log_df = test_request.get("event_log")
 
     if event_log_df is None:
-        # Default sample ERP event log
+        from pathlib import Path
+        for p in [Path("sample_data/erp_event_log_large.csv"), Path("sample_data/erp_event_log.csv")]:
+            if p.exists():
+                try:
+                    event_log_df = pd.read_csv(p)
+                    break
+                except Exception:
+                    pass
+
+    if event_log_df is None:
+        # Default fallback sample ERP event log
         event_log_df = pd.DataFrame([
             {"case_id": "PO-1001", "activity": "Create PR", "timestamp": "2026-01-02 09:00", "user": "John"},
             {"case_id": "PO-1001", "activity": "Approve PR", "timestamp": "2026-01-02 11:30", "user": "Sarah"},

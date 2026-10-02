@@ -12,12 +12,14 @@ from core.storage import (
     save_file,
     delete_file,
     compute_sha256,
+    seed_sample_storage_files,
     CATEGORIES
 )
 from core.ui import apply_inter_theme
 
 st.set_page_config(page_title="Centralized Storage · FieldAI", page_icon="🗄️", layout="wide")
 apply_inter_theme()
+seed_sample_storage_files()
 
 if not st.session_state.get("user"):
     st.warning("Please sign in from the main page.")
