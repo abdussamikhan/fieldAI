@@ -92,6 +92,14 @@ class Database:
             else:
                 rows = [dict(row) for row in cur.fetchall()]
             cur.close()
+
+            # Ensure all database values (datetime, date, Decimal, UUID) are JSON-safe strings
+            for r in rows:
+                for k, v in list(r.items()):
+                    if hasattr(v, "isoformat"):
+                        r[k] = v.isoformat()
+                    elif type(v).__name__ in ("Decimal", "UUID"):
+                        r[k] = str(v)
             return rows
         finally:
             self.release_connection(conn)

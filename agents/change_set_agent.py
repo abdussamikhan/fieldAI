@@ -93,7 +93,7 @@ def run(state: FieldAIState) -> Dict[str, Any]:
             }
         }
         res = llm.generate_json(
-            prompt=f"Perform entity resolution and diff:\n{json.dumps(comparison_context, indent=2, ensure_ascii=False)}",
+            prompt=f"Perform entity resolution and diff:\n{json.dumps(comparison_context, indent=2, ensure_ascii=False, default=str)}",
             system_prompt=PROMPT_CHANGE_SET_SYSTEM
         )
         change_items = res.get("change_items", [])
@@ -115,9 +115,9 @@ def run(state: FieldAIState) -> Dict[str, Any]:
                 item.get("entity", "step"),
                 item.get("action", "Added"),
                 item.get("target_code", ""),
-                json.dumps(item.get("before")) if item.get("before") else None,
-                json.dumps(item.get("after")) if item.get("after") else None,
-                json.dumps(item.get("evidence", [])),
+                json.dumps(item.get("before"), default=str) if item.get("before") else None,
+                json.dumps(item.get("after"), default=str) if item.get("after") else None,
+                json.dumps(item.get("evidence", []), default=str),
                 item.get("conflict_with"),
                 item.get("decision", "pending")
             )

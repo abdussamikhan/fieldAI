@@ -89,7 +89,7 @@ def create_version_snapshot(
 ) -> int:
     """Takes an immutable JSON snapshot of the current master model."""
     model = get_process_master_model(process_id)
-    snapshot_json = json.dumps(model, ensure_ascii=False)
+    snapshot_json = json.dumps(model, ensure_ascii=False, default=str)
     
     version_id = db.execute_insert(
         """

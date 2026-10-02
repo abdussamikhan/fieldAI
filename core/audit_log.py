@@ -10,7 +10,7 @@ def log_audit(
     details: Optional[Dict[str, Any]] = None
 ) -> int:
     """Writes an append-only audit trail record."""
-    details_str = json.dumps(details or {}, ensure_ascii=False)
+    details_str = json.dumps(details or {}, ensure_ascii=False, default=str)
     return db.execute_insert(
         """
         INSERT INTO audit_log (user_id, action, entity, entity_id, details_json)

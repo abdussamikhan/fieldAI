@@ -10,7 +10,7 @@ def enqueue_job(
     created_by: Optional[int] = None
 ) -> int:
     """Queues a new background task."""
-    payload_str = json.dumps(payload, ensure_ascii=False)
+    payload_str = json.dumps(payload, ensure_ascii=False, default=str)
     return db.execute_insert(
         """
         INSERT INTO jobs (job_type, payload_json, status, progress, message, thread_id, created_by)
