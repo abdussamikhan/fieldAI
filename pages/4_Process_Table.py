@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from core.db import db
 from core.model_repo import get_process, get_active_steps
+from core.agent_registry import render_deliverable_attribution
 from exports.excel import export_process_table_excel
 from graphs.orchestrator import run_task
 
@@ -17,6 +18,7 @@ proc = get_process(process_id)
 
 st.title("📋 Master Process Table")
 st.caption(f"Sequential business steps and responsibility matrix for **{proc['name'] if proc else 'Process'}** ({proc['current_version'] if proc else 'v1.0'})")
+render_deliverable_attribution("process_extraction_agent", "Sequential Process Steps & Responsibility Allocation")
 
 steps = get_active_steps(process_id)
 

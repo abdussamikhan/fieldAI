@@ -3,6 +3,7 @@ import pandas as pd
 from core.db import db
 from core.storage import save_file
 from core.model_repo import get_process
+from core.agent_registry import render_active_agent_pill, render_deliverable_attribution
 from graphs.orchestrator import run_task
 
 st.set_page_config(page_title="Documents & Reconciliation · FieldAI", page_icon="📄", layout="wide")
@@ -38,6 +39,9 @@ with tab1:
             doc_bytes = doc_file.read() if doc_file else None
 
         if st.button("Parse Document & Run Reconciliation", type="primary", disabled=not bool(doc_bytes)):
+            status_box = st.status("🤖 Multi-Agent Document Ingestion Pipeline in Progress...", expanded=True)
+            with status_box:
+                st.write("📄 **Active Agent: document_agent** — Ingesting document text, parsing sections, and registering chunks...")
                 save_name = f"{doc_title}.txt" if not doc_title.endswith((".pdf", ".docx", ".txt", ".xlsx", ".md")) else doc_title
                 file_id = save_file(save_name, "text/plain", doc_bytes, category="source_documents", process_id=process_id, created_by=user["id"])
                 
@@ -49,14 +53,17 @@ with tab1:
                     (process_id, doc_title, f"file:{file_id}", user["id"])
                 )
 
+                st.write("⚖️ **Active Agent: reconciliation_agent** — Reconciling interview testimonies against documented policy criteria...")
                 run_task("ingest_document", {
                     "task": "ingest_document",
                     "process_id": process_id,
                     "source_id": source_id,
                     "user_id": user["id"]
                 })
-                st.success("Document parsed and 5-category reconciliation report generated!")
-                st.rerun()
+                status_box.update(label="✅ Document Ingestion & Reconciliation Agents Completed!", state="complete", expanded=False)
+
+            st.success("Document parsed and 5-category reconciliation report generated!")
+            st.rerun()
 
     with col2:
         st.subheader("Document Register")
@@ -78,6 +85,7 @@ with tab1:
 
 with tab2:
     st.subheader("⚖️ 5-Category Reconciliation Gap Report (FR-7.4)")
+    render_deliverable_attribution(["reconciliation_agent", "document_agent"], "Said vs Documented 5-Category Reconciliation Matrix")
     st.markdown("Compares what was verbally described during the walkthrough with formal requirements written in auditee documents:")
 
     recons = db.fetch_all("SELECT * FROM recon_items WHERE process_id = %s ORDER BY id DESC;", (process_id,))
@@ -114,8 +122,10 @@ with tab2:
 
 with tab3:
     st.subheader("🔍 In-Document Search & Q&A with Grounded Citations")
+    render_deliverable_attribution("doc_qa_agent", "Grounded In-Document Audit Finding & Verified Citations")
     q = st.text_input("Search or ask a question regarding uploaded documents:", placeholder="e.g. What is the policy requirement for competitive vendor quotations?")
     if q:
+        render_active_agent_pill("doc_qa_agent", "Searching document chunks and formulating grounded response...")
         with st.spinner("Searching document chunks..."):
             qa_res = run_task("ask", {
                 "task_input": q,

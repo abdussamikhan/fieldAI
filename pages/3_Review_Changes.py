@@ -2,6 +2,7 @@ import streamlit as st
 import json
 from core.db import db
 from core.model_repo import apply_change_set, get_process
+from core.agent_registry import render_deliverable_attribution
 from graphs.orchestrator import run_task
 
 st.set_page_config(page_title="Review Changes · FieldAI", page_icon="⚖️", layout="wide")
@@ -16,6 +17,7 @@ proc = get_process(process_id)
 
 st.title("⚖️ Change Set & Conflict Review")
 st.caption(f"Review and resolve proposed changes to master model for **{proc['name'] if proc else 'Process'}** ({proc['current_version'] if proc else 'v1.0'})")
+render_deliverable_attribution("change_set_agent", "Proposed Model Change Set & Entity Resolution")
 
 # Retrieve latest change sets
 change_sets = db.fetch_all(

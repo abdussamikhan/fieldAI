@@ -11,6 +11,7 @@ from core.prep_repo import (
     get_question_pack,
     delete_question_pack
 )
+from core.agent_registry import render_active_agent_pill, render_deliverable_attribution
 from graphs.orchestrator import run_task
 
 st.set_page_config(page_title="Meeting Preparation · FieldAI", page_icon="📋", layout="wide")
@@ -37,7 +38,9 @@ with tab_gen:
     col_btn1, col_btn2 = st.columns([1, 1.5])
     with col_btn1:
         if st.button("⚡ Generate Bilingual Walkthrough Question Pack", type="primary", use_container_width=True):
-            with st.spinner("Analyzing open items, risk library, and building question pack..."):
+            status_box = st.status("🤖 Active Agent: prep_agent executing...", expanded=True)
+            with status_box:
+                st.write("📋 **Active Agent: prep_agent** — Analyzing open items, risk library, and formulating bilingual questions...")
                 prep_res = run_task("prep_meeting", {
                     "process_id": process_id,
                     "user_id": user["id"]
@@ -45,7 +48,8 @@ with tab_gen:
                 pack = prep_res.get("prep_package", {})
                 st.session_state.prep_res = pack
                 st.session_state.last_saved_pack_id = None
-                st.success("✅ Bilingual Question Pack generated successfully!")
+                status_box.update(label="✅ prep_agent Completed Successfully!", state="complete", expanded=False)
+            st.success("✅ Bilingual Question Pack generated successfully!")
 
     prep_data = st.session_state.get("prep_res")
 
@@ -54,6 +58,7 @@ with tab_gen:
         questions = prep_data.get("question_pack", [])
 
         st.divider()
+        render_deliverable_attribution("prep_agent", "Bilingual Walkthrough Question Pack & Risk Scoping", version=proc_ver)
         st.subheader("📊 Risk-Based Scoping Recommendation")
         s1, s2, s3 = st.columns(3)
         with s1:

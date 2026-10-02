@@ -4,6 +4,7 @@ from core.db import db
 from core.model_repo import get_process
 from core.audit_log import log_audit
 from core.storage import save_generated_document
+from core.agent_registry import render_active_agent_pill, render_deliverable_attribution
 from exports.word import export_findings_word
 from graphs.orchestrator import run_task
 
@@ -23,16 +24,20 @@ st.caption(f"Formal fieldwork findings and methodology quality assurance for **{
 tab1, tab2 = st.tabs(["📑 Draft Findings (5 Cs)", "✅ Methodology & IIA QA Review"])
 
 with tab1:
+    render_deliverable_attribution("findings_agent", "Structured 5 Cs Audit Findings (Criteria, Condition, Cause, Consequence, Corrective Action)")
     col_f1, col_f2 = st.columns([1, 1.5])
     with col_f1:
         if st.button("⚡ Draft Findings from Fieldwork Exceptions", type="primary"):
-            with st.spinner("Compiling test exceptions and drafting 5 Cs findings..."):
+            status_box = st.status("🤖 Active Agent: findings_agent executing...", expanded=True)
+            with status_box:
+                st.write("⚠️ **Active Agent: findings_agent** — Compiling test exceptions and formulating 5 Cs findings...")
                 f_res = run_task("draft_findings", {
                     "process_id": process_id,
                     "user_id": user["id"]
                 })
-                st.success("Draft findings generated successfully!")
-                st.rerun()
+                status_box.update(label="✅ findings_agent Completed Successfully!", state="complete", expanded=False)
+            st.success("Draft findings generated successfully!")
+            st.rerun()
 
     findings = db.fetch_all("SELECT * FROM findings WHERE process_id = %s ORDER BY id DESC;", (process_id,))
 
@@ -79,16 +84,20 @@ with tab1:
 
 with tab2:
     st.subheader("✅ Quality Assurance (IIA Standards 2024 Checklist)")
+    render_deliverable_attribution("qa_review_agent", "Independent IIA Quality Assurance & Methodology Review")
     st.markdown("Automated quality review verifying file completeness against internal audit documentation standards.")
 
     if st.button("Run QA Review Check"):
-        with st.spinner("Checking risk-control links, test coverage, and sign-offs..."):
+        status_box = st.status("🤖 Active Agent: qa_review_agent executing...", expanded=True)
+        with status_box:
+            st.write("🎯 **Active Agent: qa_review_agent** — Checking risk-control coverage, test completeness, and audit trail sign-offs...")
             qa_res = run_task("qa_review", {
                 "process_id": process_id,
                 "user_id": user["id"]
             })
             st.session_state.qa_data = qa_res.get("qa_review", {})
-            st.success("QA Inspection complete!")
+            status_box.update(label="✅ qa_review_agent Completed Successfully!", state="complete", expanded=False)
+        st.success("QA Inspection complete!")
 
     qa_data = st.session_state.get("qa_data")
     if qa_data:

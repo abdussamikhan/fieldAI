@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from core.db import db
 from core.model_repo import get_process
+from core.agent_registry import render_deliverable_attribution
 
 st.set_page_config(page_title="CAE Executive Dashboard · FieldAI", page_icon="📈", layout="wide")
 
@@ -14,6 +15,7 @@ proc = get_process(process_id)
 
 st.title("📈 Chief Audit Executive (CAE) Dashboard")
 st.caption(f"Real-time audit coverage, control design ratings, and exception analytics for **{proc['name'] if proc else 'Process'}**")
+render_deliverable_attribution("monitoring_agent", "Executive Audit Telemetry & Heat Map Metrics")
 
 # Metrics summary
 m1, m2, m3, m4 = st.columns(4)

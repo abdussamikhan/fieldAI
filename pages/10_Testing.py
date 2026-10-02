@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from core.db import db
 from core.model_repo import get_process
+from core.agent_registry import render_active_agent_pill, render_deliverable_attribution
 from graphs.orchestrator import run_task
 
 st.set_page_config(page_title="Audit Testing & Analytics · FieldAI", page_icon="🔬", layout="wide")
@@ -28,6 +29,7 @@ t1, t2, t3, t4, t5 = st.tabs([
 # Tab 1: Data Analytics Tests
 with t1:
     st.subheader("Fixed Audit Analytics Library")
+    render_deliverable_attribution("analytics_agent", "Full-Population Transaction Analytics Exception List")
     analytics_tests = db.fetch_all("SELECT * FROM analytics_library ORDER BY test_id ASC;")
     test_dict = {t["test_id"]: f"{t['test_id']}: {t['name']}" for t in analytics_tests}
 
@@ -59,6 +61,7 @@ with t1:
             make_rec = st.checkbox("Schedule as recurring continuous monitoring test", value=False)
 
         if run_btn:
+            render_active_agent_pill("analytics_agent", f"Executing {selected_an_id} algorithms on full transaction dataset...")
             with st.spinner(f"Running {selected_an_id} algorithms..."):
                 res = run_task("run_test", {
                     "task": "run_test",
@@ -84,9 +87,11 @@ with t1:
 # Tab 2: SoD Checks
 with t2:
     st.subheader("🛡️ User Access & Segregation of Duties (SoD) Analysis")
+    render_deliverable_attribution("sod_agent", "Segregation of Duties Conflict Analysis")
     st.markdown("Identifies toxic combinations of user privileges across procurement, disbursement, and master file administration.")
     
     if st.button("Run SoD Conflict Analysis on User Access Matrix"):
+        render_active_agent_pill("sod_agent", "Evaluating user privilege matrix against toxic SoD rule catalog...")
         with st.spinner("Analyzing user permissions against SoD rule matrix..."):
             sod_res = run_task("run_test", {
                 "task": "run_test",
@@ -105,9 +110,11 @@ with t2:
 # Tab 3: Process Mining
 with t3:
     st.subheader("🔄 ERP Event Log Process Mining & Control Bypass Detection")
+    render_deliverable_attribution("process_mining_agent", "Event Log Conformance & Path Variance Analysis")
     st.markdown("Reconstructs actual transaction journeys from system event logs and flags path deviations where key controls were skipped.")
 
     if st.button("Mine Process Variants from ERP Event Log"):
+        render_active_agent_pill("process_mining_agent", "Reconstructing transaction pathways and identifying bypasses...")
         with st.spinner("Calculating execution variants and checking control gates..."):
             mining_res = run_task("run_test", {
                 "task": "run_test",
@@ -134,6 +141,7 @@ with t3:
 # Tab 4: Evidence Reader
 with t4:
     st.subheader("📑 Sample Evidence Document Attribute Inspector")
+    render_deliverable_attribution("evidence_agent", "Voucher Document OCR & Attribute Validation")
     st.markdown("Inspects sample invoices, PO approvals, or payment receipts against defined audit attributes.")
     
     sample_text = st.text_area(
@@ -142,6 +150,7 @@ with t4:
     )
 
     if st.button("Inspect Sample Attributes"):
+        render_active_agent_pill("evidence_agent", "Evaluating evidence against audit attributes...")
         with st.spinner("Evaluating evidence against audit attributes..."):
             ev_res = run_task("run_test", {
                 "task": "run_test",
@@ -163,6 +172,7 @@ with t4:
 # Tab 5: Continuous Monitoring
 with t5:
     st.subheader("⏰ Continuous Automated Monitoring")
+    render_deliverable_attribution("monitoring_agent", "Continuous Scheduled Audit Monitor")
     st.markdown("Review tests configured for recurring execution via the Render background cron job.")
 
     rec_tests = db.fetch_all("SELECT tr.*, t.test_code, t.control_code FROM test_runs tr JOIN tests t ON tr.test_id = t.id WHERE tr.recurring = TRUE;")

@@ -2,6 +2,7 @@ import streamlit as st
 from core.db import db
 from core.model_repo import get_process, get_process_master_model
 from core.storage import save_generated_document
+from core.agent_registry import render_deliverable_attribution
 from agents.flowchart_agent import generate_dot
 from exports.bpmn import export_bpmn_xml
 from exports.drawio import export_drawio_xml
@@ -19,6 +20,7 @@ model = get_process_master_model(process_id)
 
 st.title("🗺️ Process Flowchart & Swimlanes")
 st.caption(f"Visual audit workflow for **{proc['name'] if proc else 'Process'}** ({proc['current_version'] if proc else 'v1.0'}) with risk & control badges")
+render_deliverable_attribution("flowchart_agent", "Multi-Lane Swimlane Diagram & BPMN 2.0 Deliverables")
 
 steps = model.get("steps", [])
 risks = model.get("risks", [])

@@ -3,6 +3,7 @@ import pandas as pd
 from core.db import db
 from core.model_repo import get_process, get_process_master_model
 from core.storage import save_generated_document
+from core.agent_registry import render_deliverable_attribution
 from exports.excel import export_rcm_excel
 
 st.set_page_config(page_title="Risk-Control Matrix · FieldAI", page_icon="🛡️", layout="wide")
@@ -17,6 +18,7 @@ model = get_process_master_model(process_id)
 
 st.title("🛡️ Risk & Control Matrix (RCM)")
 st.caption(f"Comprehensive internal control matrix and design adequacy evaluations for **{proc['name'] if proc else 'Process'}** ({proc['current_version'] if proc else 'v1.0'})")
+render_deliverable_attribution(["rcm_agent", "risk_control_agent"], "Risk & Control Matrix & Control Design Adequacy Ratings")
 
 risks = model.get("risks", [])
 controls = model.get("controls", [])

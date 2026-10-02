@@ -4,6 +4,7 @@ from core.db import db
 from core.model_repo import get_process
 from core.audit_log import log_audit
 from core.storage import save_generated_document
+from core.agent_registry import render_deliverable_attribution
 from exports.excel import export_audit_program_excel
 
 st.set_page_config(page_title="Audit Program · FieldAI", page_icon="📜", layout="wide")
@@ -18,6 +19,7 @@ proc = get_process(process_id)
 
 st.title("📜 Audit Program & Testing Procedures")
 st.caption(f"Detailed fieldwork test procedures, sample sizes, and PBC evidence requirements for **{proc['name'] if proc else 'Process'}** ({proc['current_version'] if proc else 'v1.0'})")
+render_deliverable_attribution("audit_program_agent", "Fieldwork Audit Program, Testing Procedures & Deterministic Sample Sizes")
 
 tests = db.fetch_all("SELECT * FROM tests WHERE process_id = %s ORDER BY id ASC;", (process_id,))
 

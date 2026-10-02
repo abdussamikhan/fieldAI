@@ -3,6 +3,7 @@ from core.db import db
 from core.storage import save_file
 from core.jobs import enqueue_job
 from core.audit_log import log_audit
+from core.agent_registry import render_active_agent_pill, render_deliverable_attribution
 from graphs.orchestrator import run_task
 
 st.set_page_config(page_title="Meeting Capture · FieldAI", page_icon="🎙️", layout="wide")
@@ -65,7 +66,9 @@ with tab1:
 
         can_start = bool(audio_bytes) and consent
         if st.button("🚀 Transcribe & Process Walkthrough", disabled=not can_start, type="primary", use_container_width=True):
-            with st.spinner("Saving recording and running FieldAI Meeting Graph..."):
+            status_box = st.status("🤖 Multi-Agent Walkthrough Pipeline in Progress...", expanded=True)
+            with status_box:
+                st.write("🎙️ **Active Agent: transcription_agent** — Ingesting audio buffer and diarizing speaker turns...")
                 # 1. Store audio file in centralized data storage and files table
                 file_id = save_file(filename, "audio/wav", audio_bytes or b"", category="recordings", process_id=process_id, created_by=user["id"])
                 
@@ -77,6 +80,11 @@ with tab1:
                     """,
                     (process_id, title, f"file:{file_id}", lang, consent, participants, user["id"])
                 )
+
+                st.write("📝 **Active Agent: summary_agent** — Synthesizing walkthrough dialogue and extracting PBC items...")
+                st.write("⚙️ **Active Agent: process_extraction_agent** — Parsing chronological process steps & gateways...")
+                st.write("🛡️ **Active Agent: risk_control_agent** — Mapping inherent risks & identifying mitigating controls...")
+                st.write("⚖️ **Active Agent: change_set_agent** — Performing entity resolution against master process model...")
 
                 # 3. Execute LangGraph meeting pipeline
                 initial_state = {
@@ -90,13 +98,15 @@ with tab1:
                 
                 result = run_task("process_meeting", initial_state)
                 st.session_state.current_source_id = source_id
+                status_box.update(label="✅ All 5 Walkthrough Agents Completed Successfully!", state="complete", expanded=False)
 
-                st.success("🎉 Meeting successfully processed! Master model, flowchart, and RCM updated.")
-                st.balloons()
-                st.rerun()
+            st.success("🎉 Meeting successfully processed! Master model, flowchart, and RCM updated.")
+            st.balloons()
+            st.rerun()
 
 with tab2:
     st.subheader("⚡ Near-Live Walkthrough Co-Pilot (Options 3 & 4)")
+    render_deliverable_attribution("copilot_agent", "Live Interview Co-Pilot Prompts")
     st.markdown("Record 2–5 minute chunks during live interviews to receive instant follow-up prompts and capture PBC evidence on the fly.")
 
     col_cp1, col_cp2 = st.columns([1.2, 1.8])
@@ -107,6 +117,7 @@ with tab2:
 
     with col_cp2:
         if submit_chunk:
+            render_active_agent_pill("copilot_agent", "Analyzing live interview statement...")
             with st.spinner("Co-Pilot analyzing live chunk..."):
                 cp_res = run_task("copilot_chunk", {
                     "task": "copilot_chunk",
@@ -128,6 +139,7 @@ with tab2:
 
 with tab3:
     st.subheader("📝 Transcript Segments & Speaker Mapping")
+    render_deliverable_attribution("transcription_agent", "Verbatim Timestamped Transcripts")
     sources = db.fetch_all("SELECT * FROM sources WHERE process_id = %s AND kind = 'meeting' ORDER BY id DESC;", (process_id,))
     
     if sources:
