@@ -6,6 +6,10 @@ from core.audit_log import log_audit
 def get_process(process_id: int) -> Optional[Dict[str, Any]]:
     return db.fetch_one("SELECT * FROM processes WHERE id = %s;", (process_id,))
 
+def list_engagements() -> List[Dict[str, Any]]:
+    """Returns all audit engagements ordered by ID."""
+    return db.fetch_all("SELECT * FROM engagements ORDER BY id ASC;")
+
 def get_next_code(process_id: int, entity_type: str, prefix: str = "") -> str:
     """
     Allocates next sequential code per process and type without renumbering (BRD FR-6.2).

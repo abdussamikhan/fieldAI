@@ -3,7 +3,7 @@ import os
 import io
 from pathlib import Path
 from core.db import db
-from core.model_repo import get_process, list_engagements
+from core.model_repo import get_process
 from core.storage import (
     get_storage_root,
     get_storage_stats,
