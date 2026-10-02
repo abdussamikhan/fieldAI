@@ -232,26 +232,25 @@ def render_active_agent_pill(agent_name: str, activity_text: str = ""):
     info = get_agent_info(agent_name)
     color = info.get("color", "#38bdf8")
     activity = activity_text or f"Executing {info['role']}..."
-    st.markdown(
-        f"""
-        <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid {color}55; border-left: 4px solid {color}; border-radius: 8px; padding: 10px 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="font-size: 1.3rem;">{info['icon']}</span>
-                <div>
-                    <span style="color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">Active Agent</span>
-                    <div style="color: #f8fafc; font-weight: 700; font-size: 0.95rem;">
-                        {info['title']} <span style="font-size: 0.8rem; color: {color}; font-weight: normal;">({info['code']})</span>
-                    </div>
-                </div>
-            </div>
-            <div style="text-align: right;">
-                <span style="color: #cbd5e1; font-size: 0.85rem; font-style: italic;">{activity}</span>
-                <span style="display: inline-block; width: 8px; height: 8px; background-color: {color}; border-radius: 50%; margin-left: 8px; animation: pulse 1.5s infinite;"></span>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
+    html = (
+        f"<div style='background: rgba(15, 23, 42, 0.7); border: 1px solid {color}55; border-left: 4px solid {color}; "
+        f"border-radius: 8px; padding: 10px 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;'>"
+        f"<div style='display: flex; align-items: center; gap: 10px;'>"
+        f"<span style='font-size: 1.3rem;'>{info['icon']}</span>"
+        f"<div>"
+        f"<span style='color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;'>Active Agent</span>"
+        f"<div style='color: #f8fafc; font-weight: 700; font-size: 0.95rem;'>"
+        f"{info['title']} <span style='font-size: 0.8rem; color: {color}; font-weight: normal;'>({info['code']})</span>"
+        f"</div>"
+        f"</div>"
+        f"</div>"
+        f"<div style='text-align: right;'>"
+        f"<span style='color: #cbd5e1; font-size: 0.85rem; font-style: italic;'>{activity}</span>"
+        f"<span style='display: inline-block; width: 8px; height: 8px; background-color: {color}; border-radius: 50%; margin-left: 8px;'></span>"
+        f"</div>"
+        f"</div>"
     )
+    st.markdown(html, unsafe_allow_html=True)
 
 def render_deliverable_attribution(
     agent_names: Union[str, List[str]],
@@ -270,30 +269,29 @@ def render_deliverable_attribution(
         info = get_agent_info(a)
         color = info.get("color", "#38bdf8")
         badges.append(
-            f"""<span style="background-color: {color}22; border: 1px solid {color}66; color: {color}; padding: 3px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
-                {info['icon']} {info['title']}
-            </span>"""
+            f"<span style='background-color: {color}22; border: 1px solid {color}66; color: {color}; padding: 3px 8px; "
+            f"border-radius: 4px; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;'>"
+            f"{info['icon']} {info['title']}"
+            f"</span>"
         )
 
     badges_html = " ".join(badges)
     ver_html = f"<span style='color: #64748b; font-size: 0.8rem; margin-left: 6px;'>• {version}</span>" if version else ""
     note_html = f"<div style='color: #94a3b8; font-size: 0.78rem; margin-top: 4px;'>{note}</div>" if note else ""
 
-    st.markdown(
-        f"""
-        <div style="background: rgba(30, 41, 59, 0.4); border: 1px dashed rgba(148, 163, 184, 0.25); border-radius: 6px; padding: 8px 14px; margin-top: 8px; margin-bottom: 14px;">
-            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span style="color: #94a3b8; font-size: 0.8rem; font-weight: 600;">🤖 Delivered by:</span>
-                    {badges_html}
-                    {ver_html}
-                </div>
-                <div style="color: #10b981; font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; gap: 4px;">
-                    <span>✓</span> Grounded & Validated
-                </div>
-            </div>
-            {note_html}
-        </div>
-        """,
-        unsafe_allow_html=True
+    html = (
+        f"<div style='background: rgba(30, 41, 59, 0.4); border: 1px dashed rgba(148, 163, 184, 0.25); border-radius: 6px; padding: 8px 14px; margin-top: 8px; margin-bottom: 14px;'>"
+        f"<div style='display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;'>"
+        f"<div style='display: flex; align-items: center; gap: 8px; flex-wrap: wrap;'>"
+        f"<span style='color: #94a3b8; font-size: 0.8rem; font-weight: 600;'>🤖 Delivered by:</span>"
+        f"{badges_html}"
+        f"{ver_html}"
+        f"</div>"
+        f"<div style='color: #10b981; font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; gap: 4px;'>"
+        f"<span>✓</span> Grounded & Validated"
+        f"</div>"
+        f"</div>"
+        f"{note_html}"
+        f"</div>"
     )
+    st.markdown(html, unsafe_allow_html=True)

@@ -27,24 +27,20 @@ if "current_process_id" not in st.session_state:
 # Authentication Guard
 if not st.session_state.user:
     st.markdown(
-        """
-        <div style="text-align: center; margin-top: 50px; margin-bottom: 30px;">
-            <h1 style="font-size: 2.8rem; font-weight: 800; color: #38bdf8; margin-bottom: 8px;">🛡️ FieldAI</h1>
-            <p style="font-size: 1.15rem; color: #94a3b8;">Multi-Agent AI Audit Fieldwork Assistant · LangGraph & PostgreSQL</p>
-        </div>
-        """,
+        "<div style='text-align: center; margin-top: 50px; margin-bottom: 30px;'>"
+        "<h1 style='font-size: 2.8rem; font-weight: 800; color: #38bdf8; margin-bottom: 8px;'>🛡️ FieldAI</h1>"
+        "<p style='font-size: 1.15rem; color: #94a3b8;'>Multi-Agent AI Audit Fieldwork Assistant · LangGraph & PostgreSQL</p>"
+        "</div>",
         unsafe_allow_html=True
     )
     
     col1, col2, col3 = st.columns([1, 1.2, 1])
     with col2:
         st.markdown(
-            """
-            <div style="background-color: #1e293b; padding: 24px; border-radius: 12px; border: 1px solid #334155;">
-                <h3 style="margin-top: 0; color: #f8fafc; font-size: 1.25rem;">Sign In to FieldAI</h3>
-                <p style="color: #94a3b8; font-size: 0.9rem;">Enter your internal audit fieldwork credentials</p>
-            </div>
-            """,
+            "<div style='background-color: #1e293b; padding: 24px; border-radius: 12px; border: 1px solid #334155;'>"
+            "<h3 style='margin-top: 0; color: #f8fafc; font-size: 1.25rem;'>Sign In to FieldAI</h3>"
+            "<p style='color: #94a3b8; font-size: 0.9rem;'>Enter your internal audit fieldwork credentials</p>"
+            "</div>",
             unsafe_allow_html=True
         )
         with st.form("login_form"):
@@ -68,12 +64,10 @@ user = st.session_state.user
 
 with st.sidebar:
     st.markdown(
-        f"""
-        <div style="padding: 10px; background-color: #0f172a; border-radius: 8px; border: 1px solid #334155; margin-bottom: 15px;">
-            <div style="font-weight: 600; color: #38bdf8;">👤 {user['username']}</div>
-            <div style="font-size: 0.8rem; color: #94a3b8;">Role: <b>{user['role']}</b></div>
-        </div>
-        """,
+        f"<div style='padding: 10px; background-color: #0f172a; border-radius: 8px; border: 1px solid #334155; margin-bottom: 15px;'>"
+        f"<div style='font-weight: 600; color: #38bdf8;'>👤 {user['username']}</div>"
+        f"<div style='font-size: 0.8rem; color: #94a3b8;'>Role: <b>{user['role']}</b></div>"
+        f"</div>",
         unsafe_allow_html=True
     )
     if st.button("Log Out", use_container_width=True):
@@ -142,42 +136,27 @@ st.markdown("### 🚀 Fieldwork Workflow Navigator")
 st.markdown("Navigate through each phase of the audit walkthrough process using the sidebar pages or quick access buttons below:")
 
 row1_col1, row1_col2, row1_col3 = st.columns(3)
-with row1_col1:
-    st.markdown(
-        """
-        <div style="background-color: #1e293b; padding: 18px; border-radius: 8px; border-left: 4px solid #0284c7; height: 160px;">
-            <h4 style="margin: 0; color: #f8fafc;">1. Capture & Interview</h4>
-            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 8px;">Record audio walkthroughs with consent, transcribe speakers, and capture live interview prompts.</p>
-        </div>
-        """,
-        unsafe_allow_html=True
+def render_nav_card(title: str, desc: str, border_color: str):
+    card_html = (
+        f"<div style='background-color: #1e293b; padding: 18px; border-radius: 8px; border-left: 4px solid {border_color}; height: 160px;'>"
+        f"<h4 style='margin: 0; color: #f8fafc;'>{title}</h4>"
+        f"<p style='color: #94a3b8; font-size: 0.85rem; margin-top: 8px;'>{desc}</p>"
+        f"</div>"
     )
+    st.markdown(card_html, unsafe_allow_html=True)
+
+with row1_col1:
+    render_nav_card("1. Capture & Interview", "Record audio walkthroughs with consent, transcribe speakers, and capture live interview prompts.", "#0284c7")
     if st.button("Open Capture Screen →", key="btn_nav_capture"):
         st.switch_page("pages/2_Capture.py")
 
 with row1_col2:
-    st.markdown(
-        """
-        <div style="background-color: #1e293b; padding: 18px; border-radius: 8px; border-left: 4px solid #10b981; height: 160px;">
-            <h4 style="margin: 0; color: #f8fafc;">2. Master Model & Flowchart</h4>
-            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 8px;">Review sequential process table, multi-lane swim lanes (Role/Dept/System), and risk/control badges.</p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    render_nav_card("2. Master Model & Flowchart", "Review sequential process table, multi-lane swim lanes (Role/Dept/System), and risk/control badges.", "#10b981")
     if st.button("View Flowchart & Swimlanes →", key="btn_nav_flowchart"):
         st.switch_page("pages/5_Flowchart.py")
 
 with row1_col3:
-    st.markdown(
-        """
-        <div style="background-color: #1e293b; padding: 18px; border-radius: 8px; border-left: 4px solid #f59e0b; height: 160px;">
-            <h4 style="margin: 0; color: #f8fafc;">3. RCM & Audit Program</h4>
-            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 8px;">Construct Risk-Control Matrix, framework mappings (COSO, NCA, ISO), and deterministic sample sizes.</p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    render_nav_card("3. RCM & Audit Program", "Construct Risk-Control Matrix, framework mappings (COSO, NCA, ISO), and deterministic sample sizes.", "#f59e0b")
     if st.button("Open RCM Matrix →", key="btn_nav_rcm"):
         st.switch_page("pages/6_RCM.py")
 
@@ -185,41 +164,17 @@ st.markdown("<br/>", unsafe_allow_html=True)
 
 row2_col1, row2_col2, row2_col3 = st.columns(3)
 with row2_col1:
-    st.markdown(
-        """
-        <div style="background-color: #1e293b; padding: 18px; border-radius: 8px; border-left: 4px solid #8b5cf6; height: 160px;">
-            <h4 style="margin: 0; color: #f8fafc;">4. Document Reconciliation</h4>
-            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 8px;">Compare spoken walkthroughs against written SOPs with 5-category gap analysis.</p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    render_nav_card("4. Document Reconciliation", "Compare spoken walkthroughs against written SOPs with 5-category gap analysis.", "#8b5cf6")
     if st.button("Review Documents & SOPs →", key="btn_nav_docs"):
         st.switch_page("pages/8_Documents.py")
 
 with row2_col2:
-    st.markdown(
-        """
-        <div style="background-color: #1e293b; padding: 18px; border-radius: 8px; border-left: 4px solid #ec4899; height: 160px;">
-            <h4 style="margin: 0; color: #f8fafc;">5. Analytics & Testing</h4>
-            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 8px;">Run unit-tested analytics algorithms (duplicates, splits, Benford's law), SoD, and process mining.</p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    render_nav_card("5. Analytics & Testing", "Run unit-tested analytics algorithms (duplicates, splits, Benford's law), SoD, and process mining.", "#ec4899")
     if st.button("Run Audit Tests →", key="btn_nav_tests"):
         st.switch_page("pages/10_Testing.py")
 
 with row2_col3:
-    st.markdown(
-        """
-        <div style="background-color: #1e293b; padding: 18px; border-radius: 8px; border-left: 4px solid #06b6d4; height: 160px;">
-            <h4 style="margin: 0; color: #f8fafc;">6. CAE Executive Dashboard</h4>
-            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 8px;">Executive visibility into audit coverage heat maps, control design adequacy, and exception counts.</p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    render_nav_card("6. CAE Executive Dashboard", "Executive visibility into audit coverage heat maps, control design adequacy, and exception counts.", "#06b6d4")
     if st.button("Open CAE Dashboard →", key="btn_nav_dash"):
         st.switch_page("pages/12_Dashboard.py")
 
@@ -227,40 +182,16 @@ st.markdown("<br/>", unsafe_allow_html=True)
 
 row3_col1, row3_col2, row3_col3 = st.columns(3)
 with row3_col1:
-    st.markdown(
-        """
-        <div style="background-color: #1e293b; padding: 18px; border-radius: 8px; border-left: 4px solid #14b8a6; height: 160px;">
-            <h4 style="margin: 0; color: #f8fafc;">7. Centralized Data Storage</h4>
-            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 8px;">Unified permanent repository for all walkthrough recordings, source documents, generated deliverables, and exports.</p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    render_nav_card("7. Centralized Data Storage", "Unified permanent repository for all walkthrough recordings, source documents, generated deliverables, and exports.", "#14b8a6")
     if st.button("Explore Central Storage →", key="btn_nav_storage"):
         st.switch_page("pages/15_Centralized_Storage.py")
 
 with row3_col2:
-    st.markdown(
-        """
-        <div style="background-color: #1e293b; padding: 18px; border-radius: 8px; border-left: 4px solid #f97316; height: 160px;">
-            <h4 style="margin: 0; color: #f8fafc;">8. Walkthrough Prep & Question Pack</h4>
-            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 8px;">Generate bilingual interview packs, scoping metrics, and save/load them from central database storage.</p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    render_nav_card("8. Walkthrough Prep & Question Pack", "Generate bilingual interview packs, scoping metrics, and save/load them from central database storage.", "#f97316")
     if st.button("Open Question Packs →", key="btn_nav_prep"):
         st.switch_page("pages/9_Prep.py")
 
 with row3_col3:
-    st.markdown(
-        """
-        <div style="background-color: #1e293b; padding: 18px; border-radius: 8px; border-left: 4px solid #6366f1; height: 160px;">
-            <h4 style="margin: 0; color: #f8fafc;">9. Findings & QA Review</h4>
-            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 8px;">Draft 5 Cs findings, manage review notes, and export professional Word (.docx) audit memos.</p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    render_nav_card("9. Findings & QA Review", "Draft 5 Cs findings, manage review notes, and export professional Word (.docx) audit memos.", "#6366f1")
     if st.button("Review Findings →", key="btn_nav_findings"):
         st.switch_page("pages/11_Findings.py")

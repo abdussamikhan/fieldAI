@@ -101,22 +101,20 @@ with tab2:
             }
             cat_color = color_map.get(cat, "#38bdf8")
 
-            st.markdown(
-                f"""
-                <div style="border-left: 4px solid {cat_color}; background-color: #1e293b; padding: 12px; border-radius: 6px; margin-bottom: 10px;">
-                    <span style="background-color: {cat_color}; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.75rem;">{cat.upper()}</span>
-                    <b style="color: #f8fafc; margin-left: 8px;">{r.get('item_code', '')}</b>
-                    <div style="margin-top: 6px; color: #cbd5e1;">{r.get('note', '')}</div>
-                    <div style="margin-top: 4px; font-size: 0.85rem; color: #94a3b8;">
-                        📌 <b>Document:</b> {r.get('doc_ref', '')} | 🎙️ <b>Walkthrough:</b> {r.get('meeting_ref', '')}
-                    </div>
-                    <div style="margin-top: 4px; font-size: 0.85rem; color: #38bdf8;">
-                        👉 <b>Recommended Audit Action:</b> {r.get('suggested_action', '')}
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True
+            recon_html = (
+                f"<div style='border-left: 4px solid {cat_color}; background-color: #1e293b; padding: 12px; border-radius: 6px; margin-bottom: 10px;'>"
+                f"<span style='background-color: {cat_color}; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.75rem;'>{cat.upper()}</span>"
+                f"<b style='color: #f8fafc; margin-left: 8px;'>{r.get('item_code', '')}</b>"
+                f"<div style='margin-top: 6px; color: #cbd5e1;'>{r.get('note', '')}</div>"
+                f"<div style='margin-top: 4px; font-size: 0.85rem; color: #94a3b8;'>"
+                f"📌 <b>Document:</b> {r.get('doc_ref', '')} | 🎙️ <b>Walkthrough:</b> {r.get('meeting_ref', '')}"
+                f"</div>"
+                f"<div style='margin-top: 4px; font-size: 0.85rem; color: #38bdf8;'>"
+                f"👉 <b>Recommended Audit Action:</b> {r.get('suggested_action', '')}"
+                f"</div>"
+                f"</div>"
             )
+            st.markdown(recon_html, unsafe_allow_html=True)
     else:
         st.info("No reconciliation items generated yet. Ingest an SOP document above.")
 

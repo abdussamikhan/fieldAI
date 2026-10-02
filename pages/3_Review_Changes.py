@@ -74,16 +74,14 @@ for item in items:
     evidence_list = json.loads(item["evidence_json"]) if item.get("evidence_json") else []
 
     with st.container():
-        st.markdown(
-            f"""
-            <div style="border-left: 5px solid {badge_color}; background-color: #1e293b; padding: 12px 18px; border-radius: 6px; margin-bottom: 12px;">
-                <span style="background-color: {badge_color}; color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.8rem;">{action.upper()}</span>
-                <span style="color: #38bdf8; font-weight: bold; margin-left: 8px;">{entity.upper()} {target_code}</span>
-                <span style="color: #94a3b8; font-size: 0.85rem; margin-left: 12px;">Status: <b>{decision.upper()}</b></span>
-            </div>
-            """,
-            unsafe_allow_html=True
+        change_html = (
+            f"<div style='border-left: 5px solid {badge_color}; background-color: #1e293b; padding: 12px 18px; border-radius: 6px; margin-bottom: 12px;'>"
+            f"<span style='background-color: {badge_color}; color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 0.8rem;'>{action.upper()}</span>"
+            f"<span style='color: #38bdf8; font-weight: bold; margin-left: 8px;'>{entity.upper()} {target_code}</span>"
+            f"<span style='color: #94a3b8; font-size: 0.85rem; margin-left: 12px;'>Status: <b>{decision.upper()}</b></span>"
+            f"</div>"
         )
+        st.markdown(change_html, unsafe_allow_html=True)
 
         col1, col2 = st.columns([3, 1.2])
         with col1:
