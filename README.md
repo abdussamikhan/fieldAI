@@ -31,7 +31,10 @@ fieldai/
 │   ├── 11_Findings.py             # Draft 5 Cs findings, IIA methodology QA review
 │   ├── 12_Dashboard.py            # CAE executive coverage & exception dashboard
 │   ├── 13_Confirm.py              # Auditee confirmation portal & feedback
-│   └── 14_Admin.py                # Users, libraries, AI settings, append-only audit trail
+│   ├── 14_Admin.py                # Users, libraries, AI settings, append-only audit trail
+│   └── 15_Centralized_Storage.py  # Centralized data storage explorer & audit vault
+├── data_storage/                  # Centralized storage directory (recordings, docs, deliverables)
+├── MULTI_AGENT_AND_STORAGE_REFERENCE.md # Complete 21-Agent, Active Tracking & Storage Reference Guide
 ├── agents/                        # 21 agents, one file each (LangGraph nodes)
 │   ├── transcription_agent.py
 │   ├── summary_agent.py
@@ -85,6 +88,20 @@ fieldai/
 ├── render.yaml                    # Render Blueprint (DB, Web, Worker, Cron, Secrets)
 └── requirements.txt               # Dependencies
 ```
+
+---
+
+## 📚 Multi-Agent Architecture & Centralized Storage Reference
+
+For detailed specifications on the 21 specialized agents, active agent tracking mechanisms, deliverable attributions, and centralized storage filesystem architecture, see:
+👉 **[`MULTI_AGENT_AND_STORAGE_REFERENCE.md`](MULTI_AGENT_AND_STORAGE_REFERENCE.md)**
+
+It covers:
+- **Complete 21-Agent Registry Catalog** with roles, models, and deliverable responsibilities.
+- **Real-Time Active Agent Tracking Engine** and UI progress indicators.
+- **Deliverable Attribution Badges** mapped across all Streamlit screens.
+- **Centralized Data Storage Engine** (`data_storage/`), SHA-256 integrity verification, and persistent disk setup for Render.
+- **Bilingual Walkthrough Question Pack Persistence** (`core/prep_repo.py`).
 
 ---
 
