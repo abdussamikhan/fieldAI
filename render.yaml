@@ -53,7 +53,7 @@ databases:
   - name: fieldai-db
     databaseName: fieldai
     user: fieldai_user
-    plan: starter
+    plan: free
     region: oregon
     postgresMajorVersion: 16
 
