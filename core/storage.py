@@ -83,12 +83,26 @@ def save_file(
     safe_name = f"{timestamp_prefix}_{clean_filename(filename)}"
     dest_path = proc_folder / safe_name
 
+    sha256_hash = compute_sha256(data)
+    size_bytes = len(data)
+
+    # Deduplicate: if an identical file for this process, filename, and content already exists on disk, reuse it
+    existing = db.fetch_one(
+        """
+        SELECT id, storage_path FROM files 
+        WHERE filename = %s AND category = %s AND (process_id = %s OR (process_id IS NULL AND %s IS NULL)) AND sha256 = %s
+        ORDER BY id DESC;
+        """,
+        (filename, category, process_id, process_id, sha256_hash)
+    )
+    if existing and existing.get("storage_path"):
+        if (root / existing["storage_path"]).exists():
+            return existing["id"]
+
     # Write file to centralized filesystem storage
     with open(dest_path, "wb") as f:
         f.write(data)
 
-    sha256_hash = compute_sha256(data)
-    size_bytes = len(data)
     rel_path = str(dest_path.relative_to(root))
 
     # Record in database registry

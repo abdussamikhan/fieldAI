@@ -14,6 +14,7 @@ if not st.session_state.get("user"):
     st.warning("Please sign in from the main page.")
     st.stop()
 
+user = st.session_state.user
 process_id = st.session_state.get("current_process_id", 1)
 proc = get_process(process_id)
 model = get_process_master_model(process_id)
