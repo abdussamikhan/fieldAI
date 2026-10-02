@@ -7,8 +7,7 @@ services:
     dockerContext: .
     plan: starter
     region: oregon
-    buildCommand: ""
-    startCommand: streamlit run app.py --server.port $PORT --server.address 0.0.0.0
+    dockerCommand: streamlit run app.py --server.port $PORT --server.address 0.0.0.0
     envVars:
       - fromGroup: fieldai-secrets
       - key: DATABASE_URL
@@ -24,8 +23,7 @@ services:
     dockerContext: .
     plan: starter
     region: oregon
-    buildCommand: ""
-    startCommand: python worker.py
+    dockerCommand: python worker.py
     envVars:
       - fromGroup: fieldai-secrets
       - key: DATABASE_URL
@@ -42,7 +40,7 @@ services:
     plan: starter
     region: oregon
     schedule: "0 2 * * 1" # Weekly every Monday at 02:00 UTC
-    startCommand: python jobs/run_monitoring.py
+    dockerCommand: python jobs/run_monitoring.py
     envVars:
       - fromGroup: fieldai-secrets
       - key: DATABASE_URL
