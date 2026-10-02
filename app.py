@@ -3,7 +3,6 @@ from core.db import db
 from core.auth import authenticate_user
 from core.audit_log import log_audit
 from core.ui import apply_inter_theme
-from graphs.orchestrator import run_task
 
 st.set_page_config(
     page_title="FieldAI – Multi-Agent AI Audit Fieldwork Assistant",
@@ -87,34 +86,9 @@ with st.sidebar:
     st.markdown(f"**Process:** {proc['name'] if proc else 'None'} (`{proc['code_prefix'] if proc else 'P2P'}`)")
     st.markdown(f"**Version:** `{proc['current_version'] if proc else 'v1.0'}`")
 
-# Main Header & Global "Ask FieldAI" Assistant
-col_t, col_q = st.columns([1.2, 1.8])
-with col_t:
-    st.title("🛡️ FieldAI Fieldwork Assistant")
-    st.caption("AI-Powered Walkthrough Capture, RCM, Audit Programs, and Continuous Testing")
-
-with col_q:
-    with st.container():
-        query = st.text_input("💬 Ask FieldAI (instant audit search, control guidance, standards)", placeholder="e.g. What are the delegation thresholds in the P2P SOP?")
-        if query:
-            with st.spinner("FieldAI analyzing documents & transcripts..."):
-                res = run_task("ask", {
-                    "task_input": query,
-                    "process_id": st.session_state.current_process_id,
-                    "user_id": user["id"]
-                })
-                qa_res = res.get("doc_qa_result", {})
-                answer_text = qa_res.get("answer", "Information retrieved.")
-                citations = qa_res.get("citations", [])
-
-                with st.container(border=True):
-                    st.markdown("#### 📋 FieldAI Response")
-                    st.markdown(answer_text)
-                    if citations:
-                        st.divider()
-                        st.caption("📌 **Verified Citations:**")
-                        for cit in citations:
-                            st.caption(f"- **{cit.get('source', '')}** (`{cit.get('locator', '')}`): *\"{cit.get('quote', '')}\"*")
+# Main Header
+st.title("🛡️ FieldAI Fieldwork Assistant")
+st.caption("AI-Powered Walkthrough Capture, RCM, Audit Programs, and Continuous Testing")
 
 st.divider()
 
