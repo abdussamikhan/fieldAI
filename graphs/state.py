@@ -20,6 +20,10 @@ class FieldAIState(TypedDict, total=False):
     deliverables: Dict[str, Any]           # dot, rcm rows, program rows, file paths
     test_request: Dict[str, Any]
     test_result: Dict[str, Any]
+    process_mining: Dict[str, Any]
+    sod_conflicts: List[Dict[str, Any]]
+    active_recurring_tests: List[Dict[str, Any]]
+    monitoring_status: str
     findings: List[Dict[str, Any]]
     qa_review: Dict[str, Any]
     prep_package: Dict[str, Any]

@@ -177,21 +177,25 @@ with t2:
                     "user_access": df_sod_data
                 }
             })
-            conflicts = sod_res.get("sod_conflicts", [])
-            st.warning(sod_res.get("summary", "Analysis complete."))
-            for c in conflicts:
-                badge_color = "#ef4444" if c.get("severity") == "Critical" else "#f59e0b"
-                st.markdown(f"""
-                <div style="border-left: 4px solid {badge_color}; padding-left: 12px; margin-bottom: 12px; background: rgba(255,255,255,0.02); padding: 8px 12px; border-radius: 4px;">
-                    <div style="font-size: 14px; font-weight: 500;">
-                        ⚠️ <strong>{c.get('user_name')}</strong> ({c.get('user_id')}) &bull; <span style="color: {badge_color}; font-size: 12px; text-transform: uppercase;">[{c.get('rule_code')} &bull; Severity: {c.get('severity')}]</span>
-                    </div>
-                    <div style="font-size: 13px; color: #94a3b8; margin-top: 4px;">{c.get('risk')}</div>
-                    <div style="font-size: 12px; color: #64748b; margin-top: 4px;">
-                        <strong>Assigned Roles:</strong> {', '.join(c.get('conflicting_roles', []))} | <strong>Impacted Lanes:</strong> {', '.join(c.get('impacted_lanes', []))}
-                    </div>
+            st.session_state["sod_res"] = sod_res
+
+    sod_res = st.session_state.get("sod_res")
+    if sod_res:
+        conflicts = sod_res.get("sod_conflicts", [])
+        st.warning(sod_res.get("summary", f"Detected {len(conflicts)} toxic SoD permission combinations."))
+        for c in conflicts:
+            badge_color = "#ef4444" if c.get("severity") == "Critical" else "#f59e0b"
+            st.markdown(f"""
+            <div style="border-left: 4px solid {badge_color}; padding-left: 12px; margin-bottom: 12px; background: rgba(255,255,255,0.02); padding: 8px 12px; border-radius: 4px;">
+                <div style="font-size: 14px; font-weight: 500;">
+                    ⚠️ <strong>{c.get('user_name')}</strong> ({c.get('user_id')}) &bull; <span style="color: {badge_color}; font-size: 12px; text-transform: uppercase;">[{c.get('rule_code')} &bull; Severity: {c.get('severity')}]</span>
                 </div>
-                """, unsafe_allow_html=True)
+                <div style="font-size: 13px; color: #94a3b8; margin-top: 4px;">{c.get('risk')}</div>
+                <div style="font-size: 12px; color: #64748b; margin-top: 4px;">
+                    <strong>Assigned Roles:</strong> {', '.join(c.get('conflicting_roles', []))} | <strong>Impacted Lanes:</strong> {', '.join(c.get('impacted_lanes', []))}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
 
 # Tab 3: Process Mining
 with t3:
@@ -253,25 +257,40 @@ with t3:
                 }
             })
             pm_data = mining_res.get("process_mining", {})
-            st.write(f"**Total Processed Cases:** {pm_data.get('total_cases')} | **Distinct Flow Variants Identified:** {pm_data.get('distinct_variants')}")
+            st.session_state["pm_data"] = pm_data
 
-            st.markdown("#### Identified Flow Variants:")
-            for v in pm_data.get("variants", []):
-                badge = "<span style='color: #10b981; font-weight: 500;'>🟢 Compliant Golden Path</span>" if v.get("compliant") else "<span style='color: #ef4444; font-weight: 500;'>🔴 Control Bypass Detected</span>"
-                st.markdown(f"""
-                <div style="background: rgba(255,255,255,0.02); padding: 8px 12px; border-radius: 4px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.06);">
-                    <div style="font-size: 13px;"><code>{v.get('variant_flow')}</code></div>
-                    <div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">
-                        {v.get('case_count')} cases ({v.get('frequency_pct')}%) &bull; {badge}
-                    </div>
+    pm_data = st.session_state.get("pm_data")
+    if pm_data and pm_data.get("total_cases"):
+        st.success(f"Execution complete: Reconstructed {pm_data.get('total_cases')} case trajectories across {pm_data.get('distinct_variants')} distinct process flow variants.")
+
+        res_c1, res_c2, res_c3 = st.columns(3)
+        with res_c1:
+            st.metric("Analyzed Cases", pm_data.get("total_cases", 0))
+        with res_c2:
+            st.metric("Identified Flow Variants", pm_data.get("distinct_variants", 0))
+        with res_c3:
+            st.metric("Bypassed Control Cases", len(pm_data.get("bypassed_cases", [])))
+
+        st.markdown("#### Identified Flow Variants:")
+        for v in pm_data.get("variants", []):
+            is_comp = v.get("compliant")
+            badge = "<span style='color: #10b981; font-weight: 500;'>🟢 Compliant Golden Path</span>" if is_comp else "<span style='color: #ef4444; font-weight: 500;'>🔴 Control Bypass Detected</span>"
+            border_c = "rgba(16, 185, 129, 0.3)" if is_comp else "rgba(239, 68, 68, 0.4)"
+            st.markdown(f"""
+            <div style="background: rgba(255,255,255,0.02); padding: 10px 14px; border-radius: 6px; margin-bottom: 8px; border: 1px solid {border_c};">
+                <div style="font-size: 13px;"><code>{v.get('variant_flow')}</code></div>
+                <div style="font-size: 12px; color: #94a3b8; margin-top: 6px;">
+                    <strong>{v.get('case_count')}</strong> cases ({v.get('frequency_pct')}%) &bull; {badge}
                 </div>
-                """, unsafe_allow_html=True)
+            </div>
+            """, unsafe_allow_html=True)
 
-            bypasses = pm_data.get("bypassed_cases", [])
-            if bypasses:
-                st.markdown("#### 🚨 Bypassed Control Cases:")
-                b_df = pd.DataFrame(bypasses)
-                st.dataframe(b_df, use_container_width=True)
+        bypasses = pm_data.get("bypassed_cases", [])
+        if bypasses:
+            st.markdown("#### 🚨 Bypassed Control Cases:")
+            st.caption("Transactions where mandatory control gates (e.g., Goods Receipt or Pre-Approval) were circumvented:")
+            b_df = pd.DataFrame(bypasses)
+            st.dataframe(b_df, use_container_width=True)
 
 # Tab 4: Evidence Reader
 with t4:

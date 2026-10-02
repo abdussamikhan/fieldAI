@@ -90,5 +90,10 @@ def run(state: FieldAIState) -> Dict[str, Any]:
             "distinct_variants": len(variants),
             "variants": variants,
             "bypassed_cases": bypassed_cases
+        },
+        "test_result": {
+            "summary": f"Mined {total_cases} cases and identified {len(variants)} flow variants with {len(bypassed_cases)} control bypasses.",
+            "exceptions_count": len(bypassed_cases),
+            "exceptions": bypassed_cases
         }
     }

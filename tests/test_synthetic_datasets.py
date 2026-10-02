@@ -81,3 +81,32 @@ def test_centralized_storage_samples():
     assert "invoices_extract_1000.csv" in filenames
     assert "user_access_matrix_large.csv" in filenames
     assert "erp_event_log_large.csv" in filenames
+
+def test_orchestrator_process_mining_e2e():
+    from graphs.orchestrator import run_task
+    res = run_task("run_test", {
+        "task": "run_test",
+        "process_id": 1,
+        "user_id": 1,
+        "test_request": {
+            "test_type": "process_mining"
+        }
+    })
+    assert "process_mining" in res
+    pm = res["process_mining"]
+    assert pm.get("total_cases") == 100
+    assert pm.get("distinct_variants") >= 3
+    assert len(pm.get("bypassed_cases", [])) >= 10
+
+def test_orchestrator_sod_e2e():
+    from graphs.orchestrator import run_task
+    res = run_task("run_test", {
+        "task": "run_test",
+        "process_id": 1,
+        "user_id": 1,
+        "test_request": {
+            "test_type": "sod"
+        }
+    })
+    assert "sod_conflicts" in res
+    assert len(res["sod_conflicts"]) >= 10

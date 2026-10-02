@@ -19,6 +19,11 @@ def test_router(state: FieldAIState) -> str:
         return "evidence"
     return "analytics"
 
+def check_recurring(state: FieldAIState) -> str:
+    if state.get("test_request", {}).get("make_recurring"):
+        return "monitoring"
+    return END
+
 def build_testing_graph():
     builder = StateGraph(FieldAIState)
 
@@ -39,10 +44,10 @@ def build_testing_graph():
         }
     )
 
-    builder.add_edge("analytics", "monitoring")
-    builder.add_edge("sod", "monitoring")
-    builder.add_edge("process_mining", "monitoring")
-    builder.add_edge("evidence", "monitoring")
+    builder.add_conditional_edges("analytics", check_recurring, {"monitoring": "monitoring", END: END})
+    builder.add_edge("sod", END)
+    builder.add_edge("process_mining", END)
+    builder.add_edge("evidence", END)
     builder.add_edge("monitoring", END)
 
     return builder.compile()

@@ -149,7 +149,13 @@ def run(state: FieldAIState) -> Dict[str, Any]:
                 "impacted_lanes": ["IT Security", "Finance"]
             })
 
+    summary_msg = f"Detected {len(conflicts_detected)} toxic SoD permission combinations across {len(user_access_data)} users."
     return {
         "sod_conflicts": conflicts_detected,
-        "summary": f"Detected {len(conflicts_detected)} toxic SoD permission combinations across {len(user_access_data)} users."
+        "summary": summary_msg,
+        "test_result": {
+            "summary": summary_msg,
+            "exceptions_count": len(conflicts_detected),
+            "exceptions": conflicts_detected
+        }
     }
