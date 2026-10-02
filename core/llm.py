@@ -92,7 +92,58 @@ class LLMClient:
         """Provides structured mock responses when offline or testing."""
         prompt_lower = prompt.lower()
         
-        if "summary" in prompt_lower:
+        if "question" in prompt_lower or "prep" in prompt_lower or "scoping" in prompt_lower:
+            return {
+                "scoping": {
+                    "inherent_risk_score": "High",
+                    "recommended_scope_areas": [
+                        "3-Way Matching automated tolerance and invoice hold releases",
+                        "Delegation of authority overrides for emergency purchase orders",
+                        "Segregation of Duties between vendor master creation and payment disbursement",
+                        "Physical goods receipt inspection and warehouse cut-off controls"
+                    ],
+                    "indicative_hours": 80
+                },
+                "question_pack": [
+                    {
+                        "phase": "Initiation & Requisitioning",
+                        "question_en": "How does SAP enforce automated budget availability checks before a user can submit a Purchase Requisition?",
+                        "question_ar": "كيف يفرض نظام SAP التحقق التلقائي من توفر الميزانية قبل أن يتمكن المستخدم من تقديم طلب الشراء؟",
+                        "objective": "Verify automated preventative budget controls and override protocols.",
+                        "expected_evidence": "SAP system configuration screenshot showing hard-budget block settings and exception logs."
+                    },
+                    {
+                        "phase": "Authorization & Approvals",
+                        "question_en": "What controls ensure purchase requisitions exceeding $50,000 receive CFO approval along with three competitive vendor quotations?",
+                        "question_ar": "ما هي الضوابط التي تضمن حصول طلبات الشراء التي تتجاوز 50,000 دولار على موافقة المدير المالي مع إرفاق ثلاثة عروض أسعار تنافسية؟",
+                        "objective": "Confirm adherence to the formal Delegation of Authority (DoA) matrix and competitive bidding policies.",
+                        "expected_evidence": "Sample of 5 approved POs > $50,000 with attached bid evaluation memos and CFO sign-offs."
+                    },
+                    {
+                        "phase": "Goods Receipt & Quality Verification",
+                        "question_en": "What is the procedure when goods are delivered with physical damage or quantity discrepancies at the central logistics warehouse?",
+                        "question_ar": "ما هو الإجراء المتبع عند استلام بضائع تالفة أو وجود فروقات في الكميات في المستودع اللوجستي المركزي؟",
+                        "objective": "Assess warehouse receiving inspection, discrepancy reporting, and quarantine procedures.",
+                        "expected_evidence": "Logistics Discrepancy / Damage Report template and sample of returned shipment records."
+                    },
+                    {
+                        "phase": "Invoicing, Matching & Disbursement",
+                        "question_en": "How are 3-way matching price and quantity variance tolerances configured in the ERP, and who is authorized to release an invoice payment block?",
+                        "question_ar": "كيف يتم ضبط نسب التفاوت في المطابقة الثلاثية في نظام ERP، ومن المخول بإلغاء حظر سداد الفواتير المعلقة؟",
+                        "objective": "Validate automated 3-way matching controls and segregation of duties in payment block releases.",
+                        "expected_evidence": "ERP tolerance group table (OMR6) and audit trail of payment block release approvals."
+                    },
+                    {
+                        "phase": "System Access & Exception Handling",
+                        "question_en": "How are changes to vendor master bank details validated independently prior to wire transfer execution?",
+                        "question_ar": "كيف يتم التحقق المستقل من تغييرات الحسابات البنكية للموردين قبل تنفيذ التحويلات البنكية؟",
+                        "objective": "Test anti-fraud controls surrounding vendor bank modifications and dual call-back confirmation.",
+                        "expected_evidence": "Vendor bank change request forms and documented telephone call-back verification logs."
+                    }
+                ]
+            }
+
+        elif "summary" in prompt_lower:
             return {
                 "summary": "Walkthrough conducted with Procurement and Finance teams regarding end-to-end purchase-to-pay workflow, ERP approval thresholds, and receiving controls.",
                 "key_points": [

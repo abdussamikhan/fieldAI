@@ -372,3 +372,14 @@ CREATE TABLE IF NOT EXISTS jobs (
     finished_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS question_packs (
+    id SERIAL PRIMARY KEY,
+    process_id INTEGER NOT NULL REFERENCES processes(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    scoping_json TEXT,
+    questions_json TEXT NOT NULL,
+    version VARCHAR(50) DEFAULT 'v1.0',
+    created_by INTEGER REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

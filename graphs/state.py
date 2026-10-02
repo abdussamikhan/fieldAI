@@ -2,6 +2,7 @@ from typing import TypedDict, List, Dict, Any, Optional
 
 class FieldAIState(TypedDict, total=False):
     task: str                    # e.g. "process_meeting", "ingest_document", "build_program", "run_test", "ask"
+    task_input: str
     engagement_id: int
     process_id: int
     source_id: int               # meeting or document being processed
@@ -20,5 +21,11 @@ class FieldAIState(TypedDict, total=False):
     test_request: Dict[str, Any]
     test_result: Dict[str, Any]
     findings: List[Dict[str, Any]]
+    qa_review: Dict[str, Any]
+    prep_package: Dict[str, Any]
+    copilot_hints: List[Dict[str, Any]]
+    doc_qa_result: Dict[str, Any]
+    evidence_evaluation: Dict[str, Any]
+    knowledge_insights: Dict[str, Any]
     messages: List[Dict[str, Any]]         # for Ask FieldAI / co-pilot
     errors: List[str]
