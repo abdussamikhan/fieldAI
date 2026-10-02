@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from core.db import db
 from core.model_repo import get_process, get_process_master_model
+from core.storage import save_generated_document
 from exports.excel import export_rcm_excel
 
 st.set_page_config(page_title="Risk-Control Matrix · FieldAI", page_icon="🛡️", layout="wide")
@@ -71,6 +72,13 @@ with col_t1:
     st.write(f"**Total Mapped Control Activities:** {len(rcm_rows)}")
 with col_t2:
     excel_rcm = export_rcm_excel(rcm_rows)
+    save_generated_document(
+        filename=f"{proc.get('code_prefix', 'PROC')}_RCM_{proc.get('current_version', 'v1.0')}.xlsx",
+        mime_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        data=excel_rcm,
+        process_id=process_id,
+        created_by=user["id"]
+    )
     st.download_button(
         "📥 Export RCM to Excel (.xlsx)",
         data=excel_rcm,

@@ -222,3 +222,45 @@ with row2_col3:
     )
     if st.button("Open CAE Dashboard →", key="btn_nav_dash"):
         st.switch_page("pages/12_Dashboard.py")
+
+st.markdown("<br/>", unsafe_allow_html=True)
+
+row3_col1, row3_col2, row3_col3 = st.columns(3)
+with row3_col1:
+    st.markdown(
+        """
+        <div style="background-color: #1e293b; padding: 18px; border-radius: 8px; border-left: 4px solid #14b8a6; height: 160px;">
+            <h4 style="margin: 0; color: #f8fafc;">7. Centralized Data Storage</h4>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 8px;">Unified permanent repository for all walkthrough recordings, source documents, generated deliverables, and exports.</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    if st.button("Explore Central Storage →", key="btn_nav_storage"):
+        st.switch_page("pages/15_Centralized_Storage.py")
+
+with row3_col2:
+    st.markdown(
+        """
+        <div style="background-color: #1e293b; padding: 18px; border-radius: 8px; border-left: 4px solid #f97316; height: 160px;">
+            <h4 style="margin: 0; color: #f8fafc;">8. Walkthrough Prep & Question Pack</h4>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 8px;">Generate bilingual interview packs, scoping metrics, and save/load them from central database storage.</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    if st.button("Open Question Packs →", key="btn_nav_prep"):
+        st.switch_page("pages/9_Prep.py")
+
+with row3_col3:
+    st.markdown(
+        """
+        <div style="background-color: #1e293b; padding: 18px; border-radius: 8px; border-left: 4px solid #6366f1; height: 160px;">
+            <h4 style="margin: 0; color: #f8fafc;">9. Findings & QA Review</h4>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 8px;">Draft 5 Cs findings, manage review notes, and export professional Word (.docx) audit memos.</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    if st.button("Review Findings →", key="btn_nav_findings"):
+        st.switch_page("pages/11_Findings.py")

@@ -18,6 +18,8 @@ ENV/
 # Uploads & temporary artifacts
 /tmp/
 *.log
+/data_storage/*
+!/data_storage/.gitkeep
 
 # Pytest / coverage
 .pytest_cache/

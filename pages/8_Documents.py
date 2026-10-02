@@ -38,8 +38,8 @@ with tab1:
             doc_bytes = doc_file.read() if doc_file else None
 
         if st.button("Parse Document & Run Reconciliation", type="primary", disabled=not bool(doc_bytes)):
-            with st.spinner("Parsing document chunks, registering metadata, and performing reconciliation..."):
-                file_id = save_file(doc_title, "text/plain", doc_bytes, created_by=user["id"])
+                save_name = f"{doc_title}.txt" if not doc_title.endswith((".pdf", ".docx", ".txt", ".xlsx", ".md")) else doc_title
+                file_id = save_file(save_name, "text/plain", doc_bytes, category="source_documents", process_id=process_id, created_by=user["id"])
                 
                 source_id = db.execute_insert(
                     """

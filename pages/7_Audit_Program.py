@@ -3,6 +3,7 @@ import pandas as pd
 from core.db import db
 from core.model_repo import get_process
 from core.audit_log import log_audit
+from core.storage import save_generated_document
 from exports.excel import export_audit_program_excel
 
 st.set_page_config(page_title="Audit Program · FieldAI", page_icon="📜", layout="wide")
@@ -29,6 +30,13 @@ with col_t1:
     st.write(f"**Total Audit Test Steps:** {len(tests)}")
 with col_t2:
     excel_tests = export_audit_program_excel(tests)
+    save_generated_document(
+        filename=f"{proc.get('code_prefix', 'PROC')}_Audit_Program_{proc.get('current_version', 'v1.0')}.xlsx",
+        mime_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        data=excel_tests,
+        process_id=process_id,
+        created_by=user["id"]
+    )
     st.download_button(
         "📥 Export Audit Program to Excel (.xlsx)",
         data=excel_tests,

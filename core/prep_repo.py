@@ -55,6 +55,30 @@ def save_question_pack(
             "question_count": len(questions)
         }
     )
+
+    # Archive physical copy into centralized data storage folder
+    try:
+        from core.storage import save_file
+        pack_payload = {
+            "pack_id": pack_id,
+            "title": title,
+            "version": version,
+            "process_id": process_id,
+            "scoping": scoping,
+            "question_pack": questions
+        }
+        pack_bytes = json.dumps(pack_payload, indent=2, ensure_ascii=False, default=str).encode("utf-8")
+        save_file(
+            filename=f"question_pack_p{process_id}_{version}.json",
+            mime_type="application/json",
+            data=pack_bytes,
+            category="question_packs",
+            process_id=process_id,
+            created_by=user_id
+        )
+    except Exception as e:
+        print(f"[PrepRepo] Storage archive error: {e}")
+
     return pack_id
 
 def list_question_packs(process_id: int) -> List[Dict[str, Any]]:

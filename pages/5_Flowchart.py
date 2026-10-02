@@ -1,6 +1,7 @@
 import streamlit as st
 from core.db import db
 from core.model_repo import get_process, get_process_master_model
+from core.storage import save_generated_document
 from agents.flowchart_agent import generate_dot
 from exports.bpmn import export_bpmn_xml
 from exports.drawio import export_drawio_xml
@@ -71,6 +72,13 @@ with exp1:
         steps=steps,
         lane_attribute="responsible_role" if lane_key == "role" else ("department" if lane_key == "department" else "system")
     )
+    save_generated_document(
+        filename=f"{proc.get('code_prefix', 'PROC')}_flow.bpmn",
+        mime_type="application/xml",
+        data=bpmn_xml.encode("utf-8"),
+        process_id=process_id,
+        created_by=user["id"]
+    )
     st.download_button(
         "BPMN 2.0 XML (.bpmn)",
         data=bpmn_xml,
@@ -84,6 +92,13 @@ with exp2:
         process_name=proc["name"] if proc else "Process",
         steps=steps,
         lane_attribute="responsible_role" if lane_key == "role" else ("department" if lane_key == "department" else "system")
+    )
+    save_generated_document(
+        filename=f"{proc.get('code_prefix', 'PROC')}_flow.drawio",
+        mime_type="application/xml",
+        data=drawio_xml.encode("utf-8"),
+        process_id=process_id,
+        created_by=user["id"]
     )
     st.download_button(
         "draw.io / Diagrams (.drawio)",
@@ -101,6 +116,13 @@ with exp3:
         steps=steps,
         risks=risks,
         controls=controls
+    )
+    save_generated_document(
+        filename=f"{proc.get('code_prefix', 'PROC')}_Summary.pdf",
+        mime_type="application/pdf",
+        data=pdf_bytes,
+        process_id=process_id,
+        created_by=user["id"]
     )
     st.download_button(
         "Audit Summary PDF (.pdf)",

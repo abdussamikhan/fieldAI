@@ -66,8 +66,8 @@ with tab1:
         can_start = bool(audio_bytes) and consent
         if st.button("🚀 Transcribe & Process Walkthrough", disabled=not can_start, type="primary", use_container_width=True):
             with st.spinner("Saving recording and running FieldAI Meeting Graph..."):
-                # 1. Store audio file in database files table
-                file_id = save_file(filename, "audio/wav", audio_bytes or b"", created_by=user["id"])
+                # 1. Store audio file in centralized data storage and files table
+                file_id = save_file(filename, "audio/wav", audio_bytes or b"", category="recordings", process_id=process_id, created_by=user["id"])
                 
                 # 2. Register source record
                 source_id = db.execute_insert(

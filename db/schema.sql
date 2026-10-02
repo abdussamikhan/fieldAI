@@ -349,7 +349,10 @@ CREATE TABLE IF NOT EXISTS audit_log (
 
 CREATE TABLE IF NOT EXISTS files (
     id SERIAL PRIMARY KEY,
+    process_id INTEGER REFERENCES processes(id) ON DELETE SET NULL,
+    category VARCHAR(100) DEFAULT 'general', -- recordings, source_documents, generated_documents, question_packs
     filename VARCHAR(255) NOT NULL,
+    storage_path VARCHAR(500),
     mime_type VARCHAR(100) NOT NULL,
     size_bytes INTEGER NOT NULL,
     data BYTEA,

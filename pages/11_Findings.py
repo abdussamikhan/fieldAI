@@ -3,6 +3,7 @@ import pandas as pd
 from core.db import db
 from core.model_repo import get_process
 from core.audit_log import log_audit
+from core.storage import save_generated_document
 from exports.word import export_findings_word
 from graphs.orchestrator import run_task
 
@@ -38,6 +39,13 @@ with tab1:
     if findings:
         with col_f2:
             word_findings = export_findings_word(findings)
+            save_generated_document(
+                filename=f"{proc.get('code_prefix', 'PROC')}_Findings.docx",
+                mime_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                data=word_findings,
+                process_id=process_id,
+                created_by=user["id"]
+            )
             st.download_button(
                 "📥 Export Findings to Word (.docx)",
                 data=word_findings,

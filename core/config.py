@@ -20,6 +20,9 @@ class Config:
     # DATABASE_URL: If set to postgresql:// or postgres://, uses PostgreSQL (psycopg3).
     # If unset or sqlite://, uses SQLite.
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///fieldai.db")
+
+    # Centralized storage directory for recordings, source documents, generated reports
+    STORAGE_DIR: str = os.getenv("STORAGE_DIR", str(Path(__file__).resolve().parent.parent / "data_storage"))
     
     ADMIN_USERNAME: str = os.getenv("ADMIN_USERNAME", "admin")
     ADMIN_PASSWORD: str = os.getenv("ADMIN_PASSWORD", "admin123")
