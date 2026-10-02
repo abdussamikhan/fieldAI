@@ -2,6 +2,7 @@ import streamlit as st
 from core.db import db
 from core.auth import authenticate_user
 from core.audit_log import log_audit
+from core.ui import apply_inter_theme
 from graphs.orchestrator import run_task
 
 st.set_page_config(
@@ -10,6 +11,8 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+apply_inter_theme()
 
 # Initialize database on startup
 db.init_db()
@@ -27,9 +30,9 @@ if "current_process_id" not in st.session_state:
 # Authentication Guard
 if not st.session_state.user:
     st.markdown(
-        "<div style='text-align: center; margin-top: 50px; margin-bottom: 30px;'>"
-        "<h1 style='font-size: 2.8rem; font-weight: 800; color: #38bdf8; margin-bottom: 8px;'>🛡️ FieldAI</h1>"
-        "<p style='font-size: 1.15rem; color: #94a3b8;'>Multi-Agent AI Audit Fieldwork Assistant · LangGraph & PostgreSQL</p>"
+        "<div style='font-family: \"Inter\", sans-serif; text-align: center; margin-top: 50px; margin-bottom: 30px;'>"
+        "<h1 style='font-family: \"Inter\", sans-serif; font-size: 2.8rem; font-weight: 400; color: #38bdf8; margin-bottom: 8px;'>🛡️ FieldAI</h1>"
+        "<p style='font-family: \"Inter\", sans-serif; font-size: 1.15rem; color: #94a3b8; font-weight: 400;'>Multi-Agent AI Audit Fieldwork Assistant · LangGraph & PostgreSQL</p>"
         "</div>",
         unsafe_allow_html=True
     )
@@ -37,9 +40,9 @@ if not st.session_state.user:
     col1, col2, col3 = st.columns([1, 1.2, 1])
     with col2:
         st.markdown(
-            "<div style='background-color: #1e293b; padding: 24px; border-radius: 12px; border: 1px solid #334155;'>"
-            "<h3 style='margin-top: 0; color: #f8fafc; font-size: 1.25rem;'>Sign In to FieldAI</h3>"
-            "<p style='color: #94a3b8; font-size: 0.9rem;'>Enter your internal audit fieldwork credentials</p>"
+            "<div style='font-family: \"Inter\", sans-serif; background-color: #1e293b; padding: 24px; border-radius: 12px; border: 1px solid #334155;'>"
+            "<h3 style='font-family: \"Inter\", sans-serif; margin-top: 0; color: #f8fafc; font-size: 1.25rem; font-weight: 400;'>Sign In to FieldAI</h3>"
+            "<p style='font-family: \"Inter\", sans-serif; color: #94a3b8; font-size: 0.9rem; font-weight: 400;'>Enter your internal audit fieldwork credentials</p>"
             "</div>",
             unsafe_allow_html=True
         )
@@ -138,9 +141,9 @@ st.markdown("Navigate through each phase of the audit walkthrough process using 
 row1_col1, row1_col2, row1_col3 = st.columns(3)
 def render_nav_card(title: str, desc: str, border_color: str):
     card_html = (
-        f"<div style='background-color: #1e293b; padding: 18px; border-radius: 8px; border-left: 4px solid {border_color}; height: 160px;'>"
-        f"<h4 style='margin: 0; color: #f8fafc;'>{title}</h4>"
-        f"<p style='color: #94a3b8; font-size: 0.85rem; margin-top: 8px;'>{desc}</p>"
+        f"<div style='font-family: \"Inter\", sans-serif; background-color: #1e293b; padding: 18px; border-radius: 8px; border-left: 4px solid {border_color}; height: 160px;'>"
+        f"<h4 style='font-family: \"Inter\", sans-serif; font-weight: 400; margin: 0; color: #f8fafc;'>{title}</h4>"
+        f"<p style='font-family: \"Inter\", sans-serif; font-weight: 400; color: #94a3b8; font-size: 0.85rem; margin-top: 8px;'>{desc}</p>"
         f"</div>"
     )
     st.markdown(card_html, unsafe_allow_html=True)

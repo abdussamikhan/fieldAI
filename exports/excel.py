@@ -5,7 +5,7 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
 def _apply_header_style(ws, cols: List[str]):
-    header_font = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
+    header_font = Font(name="Inter", size=10, bold=False, color="FFFFFF")
     header_fill = PatternFill(start_color="1E293B", end_color="1E293B", fill_type="solid")
     border = Border(
         left=Side(style='thin', color='CBD5E1'),
@@ -20,6 +20,8 @@ def _apply_header_style(ws, cols: List[str]):
         cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
         cell.border = border
     ws.row_dimensions[1].height = 28
+
+DATA_FONT = Font(name="Inter", size=10, bold=False, color="0F172A")
 
 def export_process_table_excel(steps: List[Dict[str, Any]]) -> bytes:
     wb = openpyxl.Workbook()
@@ -54,6 +56,7 @@ def export_process_table_excel(steps: List[Dict[str, Any]]) -> bytes:
 
         for c in range(1, len(headers) + 1):
             cell = ws.cell(row=row_idx, column=c)
+            cell.font = DATA_FONT
             cell.border = thin_border
             cell.alignment = Alignment(vertical="center", wrap_text=True)
 
@@ -103,6 +106,7 @@ def export_rcm_excel(rcm_rows: List[Dict[str, Any]]) -> bytes:
 
         for c in range(1, len(headers) + 1):
             cell = ws.cell(row=row_idx, column=c)
+            cell.font = DATA_FONT
             cell.border = thin_border
             cell.alignment = Alignment(vertical="center", wrap_text=True)
 
@@ -151,6 +155,7 @@ def export_audit_program_excel(tests: List[Dict[str, Any]]) -> bytes:
 
         for c in range(1, len(headers) + 1):
             cell = ws.cell(row=row_idx, column=c)
+            cell.font = DATA_FONT
             cell.border = thin_border
             cell.alignment = Alignment(vertical="center", wrap_text=True)
 

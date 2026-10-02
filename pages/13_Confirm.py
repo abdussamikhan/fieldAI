@@ -1,9 +1,11 @@
 import streamlit as st
 from core.db import db
 from core.model_repo import get_process, get_process_master_model
+from core.ui import apply_inter_theme
 from agents.flowchart_agent import generate_dot
 
 st.set_page_config(page_title="Auditee Confirmation Portal · FieldAI", page_icon="🤝", layout="wide")
+apply_inter_theme()
 
 st.title("🤝 Auditee Process Confirmation Portal (Option 16)")
 st.caption("Secure, read-only walkthrough confirmation interface for client process owners and auditees.")

@@ -227,25 +227,28 @@ def get_agent_info(agent_name: str) -> Dict[str, Any]:
         "deliverables": ["Audit Deliverable"]
     })
 
+from core.ui import apply_inter_theme
+
 def render_active_agent_pill(agent_name: str, activity_text: str = ""):
     """Renders a sleek live pulse banner indicating the agent actively executing the screen task."""
+    apply_inter_theme()
     info = get_agent_info(agent_name)
     color = info.get("color", "#38bdf8")
     activity = activity_text or f"Executing {info['role']}..."
     html = (
-        f"<div style='background: rgba(15, 23, 42, 0.7); border: 1px solid {color}55; border-left: 4px solid {color}; "
+        f"<div style='font-family: \"Inter\", sans-serif; background: rgba(15, 23, 42, 0.7); border: 1px solid {color}55; border-left: 4px solid {color}; "
         f"border-radius: 8px; padding: 10px 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;'>"
         f"<div style='display: flex; align-items: center; gap: 10px;'>"
         f"<span style='font-size: 1.3rem;'>{info['icon']}</span>"
         f"<div>"
-        f"<span style='color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;'>Active Agent</span>"
-        f"<div style='color: #f8fafc; font-weight: 700; font-size: 0.95rem;'>"
-        f"{info['title']} <span style='font-size: 0.8rem; color: {color}; font-weight: normal;'>({info['code']})</span>"
+        f"<span style='color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 400;'>Active Agent</span>"
+        f"<div style='color: #f8fafc; font-weight: 400; font-size: 0.95rem;'>"
+        f"{info['title']} <span style='font-size: 0.8rem; color: {color}; font-weight: 400;'>({info['code']})</span>"
         f"</div>"
         f"</div>"
         f"</div>"
         f"<div style='text-align: right;'>"
-        f"<span style='color: #cbd5e1; font-size: 0.85rem; font-style: italic;'>{activity}</span>"
+        f"<span style='color: #cbd5e1; font-size: 0.85rem; font-style: italic; font-weight: 400;'>{activity}</span>"
         f"<span style='display: inline-block; width: 8px; height: 8px; background-color: {color}; border-radius: 50%; margin-left: 8px;'></span>"
         f"</div>"
         f"</div>"
@@ -261,6 +264,7 @@ def render_deliverable_attribution(
     """
     Renders an attribution badge identifying the specific agent(s) who delivered the artifact shown on screen.
     """
+    apply_inter_theme()
     if isinstance(agent_names, str):
         agent_names = [agent_names]
 
@@ -269,25 +273,25 @@ def render_deliverable_attribution(
         info = get_agent_info(a)
         color = info.get("color", "#38bdf8")
         badges.append(
-            f"<span style='background-color: {color}22; border: 1px solid {color}66; color: {color}; padding: 3px 8px; "
-            f"border-radius: 4px; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;'>"
+            f"<span style='font-family: \"Inter\", sans-serif; background-color: {color}22; border: 1px solid {color}66; color: {color}; padding: 3px 8px; "
+            f"border-radius: 4px; font-size: 0.8rem; font-weight: 400; display: inline-flex; align-items: center; gap: 4px;'>"
             f"{info['icon']} {info['title']}"
             f"</span>"
         )
 
     badges_html = " ".join(badges)
-    ver_html = f"<span style='color: #64748b; font-size: 0.8rem; margin-left: 6px;'>• {version}</span>" if version else ""
-    note_html = f"<div style='color: #94a3b8; font-size: 0.78rem; margin-top: 4px;'>{note}</div>" if note else ""
+    ver_html = f"<span style='color: #64748b; font-size: 0.8rem; margin-left: 6px; font-weight: 400;'>• {version}</span>" if version else ""
+    note_html = f"<div style='color: #94a3b8; font-size: 0.78rem; margin-top: 4px; font-weight: 400;'>{note}</div>" if note else ""
 
     html = (
-        f"<div style='background: rgba(30, 41, 59, 0.4); border: 1px dashed rgba(148, 163, 184, 0.25); border-radius: 6px; padding: 8px 14px; margin-top: 8px; margin-bottom: 14px;'>"
+        f"<div style='font-family: \"Inter\", sans-serif; background: rgba(30, 41, 59, 0.4); border: 1px dashed rgba(148, 163, 184, 0.25); border-radius: 6px; padding: 8px 14px; margin-top: 8px; margin-bottom: 14px;'>"
         f"<div style='display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;'>"
         f"<div style='display: flex; align-items: center; gap: 8px; flex-wrap: wrap;'>"
-        f"<span style='color: #94a3b8; font-size: 0.8rem; font-weight: 600;'>🤖 Delivered by:</span>"
+        f"<span style='color: #94a3b8; font-size: 0.8rem; font-weight: 400;'>🤖 Delivered by:</span>"
         f"{badges_html}"
         f"{ver_html}"
         f"</div>"
-        f"<div style='color: #10b981; font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; gap: 4px;'>"
+        f"<div style='color: #10b981; font-size: 0.75rem; font-weight: 400; display: flex; align-items: center; gap: 4px;'>"
         f"<span>✓</span> Grounded & Validated"
         f"</div>"
         f"</div>"

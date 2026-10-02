@@ -14,8 +14,10 @@ from core.storage import (
     compute_sha256,
     CATEGORIES
 )
+from core.ui import apply_inter_theme
 
 st.set_page_config(page_title="Centralized Storage · FieldAI", page_icon="🗄️", layout="wide")
+apply_inter_theme()
 
 if not st.session_state.get("user"):
     st.warning("Please sign in from the main page.")

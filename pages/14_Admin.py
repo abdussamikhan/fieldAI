@@ -4,8 +4,10 @@ from core.db import db
 from core.auth import create_user, check_permission
 from core.audit_log import get_audit_logs, log_audit
 from core.config import config
+from core.ui import apply_inter_theme
 
 st.set_page_config(page_title="Administration · FieldAI", page_icon="⚙️", layout="wide")
+apply_inter_theme()
 
 if not st.session_state.get("user"):
     st.warning("Please sign in from the main page.")

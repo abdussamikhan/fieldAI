@@ -1,9 +1,23 @@
 import io
+import os
+from pathlib import Path
 from typing import List, Dict, Any
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+
+# Register Inter font if TTF asset exists
+FONT_NAME = "Helvetica"
+font_path = Path(__file__).resolve().parent.parent / "assets" / "fonts" / "Inter-Regular.ttf"
+if font_path.exists():
+    try:
+        pdfmetrics.registerFont(TTFont("Inter", str(font_path)))
+        FONT_NAME = "Inter"
+    except Exception as e:
+        print(f"[PDF] Could not register Inter font: {e}")
 
 def export_process_summary_pdf(
     process_name: str,
@@ -17,12 +31,13 @@ def export_process_summary_pdf(
     story = []
     styles = getSampleStyleSheet()
 
-    # Title
+    # Title with Inter font, non-bold
     title_style = ParagraphStyle(
         'DocTitle',
         parent=styles['Heading1'],
-        fontSize=18,
-        leading=22,
+        fontName=FONT_NAME,
+        fontSize=16,
+        leading=20,
         textColor=colors.HexColor('#0f172a'),
         spaceAfter=12
     )
@@ -30,7 +45,14 @@ def export_process_summary_pdf(
     story.append(Spacer(1, 10))
 
     # Section 1: Process Steps
-    h2_style = ParagraphStyle('H2', parent=styles['Heading2'], fontSize=13, textColor=colors.HexColor('#0284c7'))
+    h2_style = ParagraphStyle(
+        'H2',
+        parent=styles['Heading2'],
+        fontName=FONT_NAME,
+        fontSize=12,
+        leading=16,
+        textColor=colors.HexColor('#0284c7')
+    )
     story.append(Paragraph("1. Process Steps & Responsibility Flow", h2_style))
     story.append(Spacer(1, 6))
 
@@ -46,7 +68,7 @@ def export_process_summary_pdf(
     table_style = TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1e293b')),
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTNAME', (0, 0), (-1, -1), FONT_NAME),
         ('FONTSIZE', (0, 0), (-1, 0), 9),
         ('BOTTOMPADDING', (0, 0), (-1, 0), 6),
         ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cbd5e1')),

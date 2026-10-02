@@ -1,8 +1,10 @@
 import streamlit as st
 from core.db import db
 from core.audit_log import log_audit
+from core.ui import apply_inter_theme
 
 st.set_page_config(page_title="Engagements & Processes · FieldAI", page_icon="📁", layout="wide")
+apply_inter_theme()
 
 if not st.session_state.get("user"):
     st.warning("Please sign in from the main page.")

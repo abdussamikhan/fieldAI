@@ -3,8 +3,10 @@ import pandas as pd
 from core.db import db
 from core.model_repo import get_process
 from core.agent_registry import render_deliverable_attribution
+from core.ui import apply_inter_theme
 
 st.set_page_config(page_title="CAE Executive Dashboard · FieldAI", page_icon="📈", layout="wide")
+apply_inter_theme()
 
 if not st.session_state.get("user"):
     st.warning("Please sign in from the main page.")

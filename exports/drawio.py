@@ -43,7 +43,7 @@ def export_drawio_xml(
         ET.SubElement(root, "mxCell", {
             "id": lane_cell_id,
             "value": lane_name,
-            "style": "swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalFlip=0;fillColor=#1e293b;fontColor=#ffffff;strokeColor=#334155;",
+            "style": "swimlane;fontFamily=Inter;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalFlip=0;fillColor=#1e293b;fontColor=#ffffff;strokeColor=#334155;",
             "vertex": "1",
             "parent": "1"
         })
@@ -57,10 +57,10 @@ def export_drawio_xml(
             cell_id_counter += 1
             code = s.get("step_code", "")
             desc = s.get("description", "")
-            label = f"<b>[{code}]</b><br/>{desc}"
+            label = f"[{code}]<br/>{desc}"
             
             is_decision = s.get("is_decision", False)
-            shape_style = "rhombus;whiteSpace=wrap;html=1;fillColor=#fef3c7;strokeColor=#d97706;fontColor=#78350f;" if is_decision else "rounded=1;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#64748b;fontColor=#0f172a;"
+            shape_style = "rhombus;whiteSpace=wrap;html=1;fontFamily=Inter;fontStyle=0;fillColor=#fef3c7;strokeColor=#d97706;fontColor=#78350f;" if is_decision else "rounded=1;whiteSpace=wrap;html=1;fontFamily=Inter;fontStyle=0;fillColor=#f8fafc;strokeColor=#64748b;fontColor=#0f172a;"
 
             ET.SubElement(root, "mxCell", {
                 "id": step_id,

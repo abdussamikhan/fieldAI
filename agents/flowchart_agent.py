@@ -32,9 +32,9 @@ def generate_dot(
     dot_lines = [
         "digraph ProcessFlow {",
         f"  rankdir={orientation};",
-        "  fontname=\"Helvetica,Arial,sans-serif\";",
-        "  node [fontname=\"Helvetica,Arial,sans-serif\", fontsize=10];",
-        "  edge [fontname=\"Helvetica,Arial,sans-serif\", fontsize=9, color=\"#64748b\"];",
+        "  fontname=\"Inter,sans-serif\";",
+        "  node [fontname=\"Inter,sans-serif\", fontsize=10];",
+        "  edge [fontname=\"Inter,sans-serif\", fontsize=9, color=\"#64748b\"];",
         "  compound=true;",
         "  splines=ortho;",
         "  pad=0.4;",
@@ -47,7 +47,7 @@ def generate_dot(
         "    color=\"#f1f5f9\";",
         "    fillcolor=\"#f8fafc\";",
         "    node [shape=plaintext, fontsize=11];",
-        f"    title_node [label=\"FieldAI Master Process Model\\nProcess: {process_name} | Version: {version} | Date: {date_str}\", fontcolor=\"#0f172a\", fontname=\"Helvetica-Bold\"];",
+        f"    title_node [label=\"FieldAI Master Process Model\\nProcess: {process_name} | Version: {version} | Date: {date_str}\", fontcolor=\"#0f172a\", fontname=\"Inter,sans-serif\"];",
         "  }",
         ""
     ]
@@ -76,7 +76,7 @@ def generate_dot(
         dot_lines.append("    style=rounded;")
         dot_lines.append("    color=\"#cbd5e1\";")
         dot_lines.append("    bgcolor=\"#f8fafc\";")
-        dot_lines.append("    fontname=\"Helvetica-Bold\";")
+        dot_lines.append("    fontname=\"Inter,sans-serif\";")
         dot_lines.append("    fontsize=11;")
         dot_lines.append("    fontcolor=\"#1e293b\";")
 
@@ -110,7 +110,7 @@ def generate_dot(
                 # If risk has no linked control: draw dashed red (FR-3.4)
                 has_ctrl = bool(r.get("control_codes"))
                 r_border = "dashed" if not has_ctrl else "solid"
-                dot_lines.append(f"    {r_node_id} [shape=box, style=\"filled,{r_border}\", fillcolor=\"#fee2e2\", color=\"#ef4444\", fontcolor=\"#991b1b\", fontsize=8, label=\"{r_code}: Risk\"];")
+                dot_lines.append(f"    {r_node_id} [shape=box, style=\"filled,{r_border}\", fillcolor=\"#fee2e2\", color=\"#ef4444\", fontcolor=\"#991b1b\", fontsize=8, fontname=\"Inter,sans-serif\", label=\"{r_code}: Risk\"];")
                 dot_lines.append(f"    {r_node_id} -> {node_id} [style=dotted, color=\"#ef4444\", arrowhead=none];")
 
             # Control badges attached to step
@@ -118,9 +118,7 @@ def generate_dot(
             for c in matched_ctrls:
                 c_code = c.get("control_code")
                 c_node_id = f"ctrl_{node_id}_{c_code.replace('-', '_')}"
-                is_key = c.get("key_control", True)
-                font_weight = "Helvetica-Bold" if is_key else "Helvetica"
-                dot_lines.append(f"    {c_node_id} [shape=box, style=filled, fillcolor=\"#dcfce7\", color=\"#22c55e\", fontcolor=\"#166534\", fontsize=8, fontname=\"{font_weight}\", label=\"{c_code}: Control\"];")
+                dot_lines.append(f"    {c_node_id} [shape=box, style=filled, fillcolor=\"#dcfce7\", color=\"#22c55e\", fontcolor=\"#166534\", fontsize=8, fontname=\"Inter,sans-serif\", label=\"{c_code}: Control\"];")
                 dot_lines.append(f"    {node_id} -> {c_node_id} [style=dotted, color=\"#22c55e\", arrowhead=none];")
 
         dot_lines.append("  }")
