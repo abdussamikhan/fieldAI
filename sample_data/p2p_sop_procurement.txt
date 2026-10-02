@@ -1,0 +1,27 @@
+STANDARD OPERATING PROCEDURE: PROCURE-TO-PAY (P2P)
+Document ID: SOP-FIN-04
+Version: 3.0
+Effective Date: 1 January 2024
+Owner: Financial Controller
+Classification: Internal Audit Approved
+
+1. OBJECTIVE & SCOPE
+This document outlines the mandatory controls and procedures for ordering, receiving, and settling liabilities for goods and services across Alpha Corp.
+
+2. PURCHASE REQUISITIONS (PR)
+2.1 All business units must enter requisitions electronically via SAP ERP.
+2.2 The system performs an automated hard-budget availability check. If insufficient budget exists, the PR is automatically rejected.
+
+3. DELEGATION OF AUTHORITY & APPROVAL LIMITS
+3.1 Requisitions up to $10,000: Approved by Department Head.
+3.2 Requisitions $10,001 to $50,000: Approved by Division Vice President.
+3.3 Requisitions exceeding $50,000: Approved by Chief Financial Officer (CFO). Minimum of three (3) independent competitive quotations must be attached.
+
+4. GOODS RECEIPT (GRN)
+4.1 Physical goods received at the central logistics warehouse must undergo count and physical damage inspection.
+4.2 A Goods Receipt Note (GRN) must be recorded in SAP within 24 hours of delivery before any invoice can be scheduled for payment.
+
+5. THREE-WAY MATCHING & DISBURSEMENT
+5.1 Accounts Payable performs automated 3-way matching in SAP across Purchase Order, Goods Receipt Note, and Supplier Invoice.
+5.2 Tolerance for price variance is 0%. Any price deviation requires formal Procurement Manager override memo.
+5.3 Payment disbursements are processed weekly via dual-authorized electronic funds transfer.

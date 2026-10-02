@@ -1,0 +1,16 @@
+case_id,activity,timestamp,user
+PO-501,Create PR,2026-01-10 08:30:00,Requisitioner_A
+PO-501,Approve PR,2026-01-10 10:15:00,Approver_DeptHead
+PO-501,Issue PO,2026-01-10 14:00:00,Buyer_Proc
+PO-501,Record GRN,2026-01-12 09:00:00,Warehouse_Whs
+PO-501,Post Invoice,2026-01-14 11:30:00,AP_Clerk
+PO-501,Release Payment,2026-01-16 15:00:00,Treasury_Officer
+PO-502,Create PR,2026-01-11 09:00:00,Requisitioner_B
+PO-502,Approve PR,2026-01-11 11:00:00,Approver_DeptHead
+PO-502,Issue PO,2026-01-11 13:00:00,Buyer_Proc
+PO-502,Post Invoice,2026-01-13 10:00:00,AP_Clerk
+PO-502,Release Payment,2026-01-15 12:00:00,Treasury_Officer
+PO-503,Create PR,2026-01-12 10:00:00,Requisitioner_C
+PO-503,Post Invoice,2026-01-12 15:00:00,AP_Clerk
+PO-503,Approve PR,2026-01-14 09:00:00,Approver_DeptHead
+PO-503,Release Payment,2026-01-16 11:00:00,Treasury_Officer
