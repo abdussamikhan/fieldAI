@@ -47,6 +47,21 @@ b, strong, th,
     direction: ltr !important;
 }
 
+/* Sidebar Navigation Section Headers */
+[data-testid="stSidebarNavSectionHeader"],
+div[data-testid="stSidebarNavItems"] > div > span,
+[data-testid="stSidebarNav"] h2,
+[data-testid="stSidebarNav"] h3 {
+    font-family: 'Inter', sans-serif !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    color: #38bdf8 !important;
+    margin-top: 14px !important;
+    margin-bottom: 6px !important;
+}
+
 /* Sidebar Menu Tile Renaming */
 [data-testid="stSidebarNav"] span[label="app"],
 [data-testid="stSidebarNav"] span[label="App"] {
