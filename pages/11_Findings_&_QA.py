@@ -7,6 +7,7 @@ from core.storage import save_generated_document
 from core.agent_registry import render_active_agent_pill, render_deliverable_attribution
 from core.ui import apply_inter_theme
 from exports.word import export_findings_word
+from exports.pdf import export_findings_pdf
 from graphs.orchestrator import run_task
 
 st.set_page_config(page_title="Findings & QA Review · FieldAI", page_icon="📝", layout="wide")
@@ -46,6 +47,7 @@ with tab1:
     if findings:
         with col_f2:
             word_findings = export_findings_word(findings)
+            pdf_findings = export_findings_pdf(findings, process_name=proc.get("name", "Audit Process") if proc else "Audit Process")
             save_generated_document(
                 filename=f"{proc.get('code_prefix', 'PROC')}_Findings.docx",
                 mime_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -53,12 +55,30 @@ with tab1:
                 process_id=process_id,
                 created_by=user["id"]
             )
-            st.download_button(
-                "📥 Export Findings to Word (.docx)",
-                data=word_findings,
-                file_name=f"{proc.get('code_prefix', 'PROC')}_Findings.docx",
-                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            save_generated_document(
+                filename=f"{proc.get('code_prefix', 'PROC')}_Findings.pdf",
+                mime_type="application/pdf",
+                data=pdf_findings,
+                process_id=process_id,
+                created_by=user["id"]
             )
+            find_btn1, find_btn2 = st.columns(2)
+            with find_btn1:
+                st.download_button(
+                    "📥 Export Findings to Word (.docx)",
+                    data=word_findings,
+                    file_name=f"{proc.get('code_prefix', 'PROC')}_Findings.docx",
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    use_container_width=True
+                )
+            with find_btn2:
+                st.download_button(
+                    "📑 Export Findings to PDF (.pdf)",
+                    data=pdf_findings,
+                    file_name=f"{proc.get('code_prefix', 'PROC')}_Findings.pdf",
+                    mime="application/pdf",
+                    use_container_width=True
+                )
 
         st.divider()
 

@@ -12,6 +12,7 @@ from analytics.visualizations import (
     render_sod_visualizations,
     render_process_mining_visualizations
 )
+from exports.pdf import export_executive_audit_report_pdf
 
 st.set_page_config(page_title="Audit Testing & Analytics · FieldAI", page_icon="🔬", layout="wide")
 apply_inter_theme()
@@ -158,13 +159,30 @@ with t1:
                 ai_text = an_res.get("ai_report", "")
                 if ai_text:
                     st.markdown(ai_text)
-                    st.download_button(
-                        label="📥 Download Executive Audit Report (.md)",
-                        data=ai_text,
-                        file_name=f"FieldAI_{selected_an_id}_Audit_Report.md",
-                        mime="text/markdown",
-                        key="dl_ai_report"
-                    )
+                    rep_btn_col1, rep_btn_col2 = st.columns(2)
+                    with rep_btn_col1:
+                        st.download_button(
+                            label="📥 Download Executive Audit Report (.md)",
+                            data=ai_text,
+                            file_name=f"FieldAI_{selected_an_id}_Audit_Report.md",
+                            mime="text/markdown",
+                            key="dl_ai_report_md",
+                            use_container_width=True
+                        )
+                    with rep_btn_col2:
+                        pdf_report = export_executive_audit_report_pdf(
+                            title=f"FieldAI Executive Audit Report: {selected_an_id}",
+                            report_text=ai_text,
+                            test_id=selected_an_id
+                        )
+                        st.download_button(
+                            label="📑 Download Executive Audit Report (.pdf)",
+                            data=pdf_report,
+                            file_name=f"FieldAI_{selected_an_id}_Audit_Report.pdf",
+                            mime="application/pdf",
+                            key="dl_ai_report_pdf",
+                            use_container_width=True
+                        )
                 else:
                     st.info("AI report is being generated...")
 

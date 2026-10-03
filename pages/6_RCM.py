@@ -6,6 +6,7 @@ from core.storage import save_generated_document
 from core.agent_registry import render_deliverable_attribution
 from core.ui import apply_inter_theme
 from exports.excel import export_rcm_excel
+from exports.csv_export import export_rcm_csv
 
 st.set_page_config(page_title="Risk-Control Matrix · FieldAI", page_icon="🛡️", layout="wide")
 apply_inter_theme()
@@ -72,11 +73,12 @@ for r in risks:
             "framework_refs": []
         })
 
-col_t1, col_t2 = st.columns([1, 1])
+col_t1, col_t2 = st.columns([1, 1.4])
 with col_t1:
     st.write(f"**Total Mapped Control Activities:** {len(rcm_rows)}")
 with col_t2:
     excel_rcm = export_rcm_excel(rcm_rows)
+    csv_rcm = export_rcm_csv(rcm_rows)
     save_generated_document(
         filename=f"{proc.get('code_prefix', 'PROC')}_RCM_{proc.get('current_version', 'v1.0')}.xlsx",
         mime_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -84,12 +86,30 @@ with col_t2:
         process_id=process_id,
         created_by=user["id"]
     )
-    st.download_button(
-        "📥 Export RCM to Excel (.xlsx)",
-        data=excel_rcm,
-        file_name=f"{proc.get('code_prefix', 'PROC')}_RCM_{proc.get('current_version', 'v1.0')}.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    save_generated_document(
+        filename=f"{proc.get('code_prefix', 'PROC')}_RCM_{proc.get('current_version', 'v1.0')}.csv",
+        mime_type="text/csv",
+        data=csv_rcm,
+        process_id=process_id,
+        created_by=user["id"]
     )
+    rcm_btn1, rcm_btn2 = st.columns(2)
+    with rcm_btn1:
+        st.download_button(
+            "📥 Export RCM to Excel (.xlsx)",
+            data=excel_rcm,
+            file_name=f"{proc.get('code_prefix', 'PROC')}_RCM_{proc.get('current_version', 'v1.0')}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            use_container_width=True
+        )
+    with rcm_btn2:
+        st.download_button(
+            "📄 Export RCM to CSV (.csv)",
+            data=csv_rcm,
+            file_name=f"{proc.get('code_prefix', 'PROC')}_RCM_{proc.get('current_version', 'v1.0')}.csv",
+            mime="text/csv",
+            use_container_width=True
+        )
 
 st.divider()
 

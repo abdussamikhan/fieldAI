@@ -6,6 +6,7 @@ from core.audit_log import log_audit
 from core.storage import save_generated_document
 from core.agent_registry import render_deliverable_attribution
 from exports.excel import export_audit_program_excel
+from exports.csv_export import export_audit_program_csv
 from core.ui import apply_inter_theme
 
 st.set_page_config(page_title="Audit Program · FieldAI", page_icon="📜", layout="wide")
@@ -29,11 +30,12 @@ if not tests:
     st.info("No audit tests generated yet. Rebuild deliverables from Process Table or RCM.")
     st.stop()
 
-col_t1, col_t2 = st.columns([1, 1])
+col_t1, col_t2 = st.columns([1, 1.4])
 with col_t1:
     st.write(f"**Total Audit Test Steps:** {len(tests)}")
 with col_t2:
     excel_tests = export_audit_program_excel(tests)
+    csv_tests = export_audit_program_csv(tests)
     save_generated_document(
         filename=f"{proc.get('code_prefix', 'PROC')}_Audit_Program_{proc.get('current_version', 'v1.0')}.xlsx",
         mime_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -41,12 +43,30 @@ with col_t2:
         process_id=process_id,
         created_by=user["id"]
     )
-    st.download_button(
-        "📥 Export Audit Program to Excel (.xlsx)",
-        data=excel_tests,
-        file_name=f"{proc.get('code_prefix', 'PROC')}_Audit_Program_{proc.get('current_version', 'v1.0')}.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    save_generated_document(
+        filename=f"{proc.get('code_prefix', 'PROC')}_Audit_Program_{proc.get('current_version', 'v1.0')}.csv",
+        mime_type="text/csv",
+        data=csv_tests,
+        process_id=process_id,
+        created_by=user["id"]
     )
+    test_btn1, test_btn2 = st.columns(2)
+    with test_btn1:
+        st.download_button(
+            "📥 Export Audit Program to Excel (.xlsx)",
+            data=excel_tests,
+            file_name=f"{proc.get('code_prefix', 'PROC')}_Audit_Program_{proc.get('current_version', 'v1.0')}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            use_container_width=True
+        )
+    with test_btn2:
+        st.download_button(
+            "📄 Export Audit Program to CSV (.csv)",
+            data=csv_tests,
+            file_name=f"{proc.get('code_prefix', 'PROC')}_Audit_Program_{proc.get('current_version', 'v1.0')}.csv",
+            mime="text/csv",
+            use_container_width=True
+        )
 
 st.divider()
 
