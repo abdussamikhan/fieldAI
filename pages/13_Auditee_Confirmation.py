@@ -24,8 +24,8 @@ controls = model.get("controls", [])
 
 if steps:
     f_tab1, f_tab2 = st.tabs([
-        "⚡ Cytoscape Interactive Canvas (Draggable & Curved Béziers)",
-        "📐 Blueprint View (Graphviz)"
+        "Interactive Canvas",
+        "Blueprint View"
     ])
     with f_tab1:
         cy_elements = generate_cytoscape_elements(

@@ -100,8 +100,8 @@ dot_code = generate_dot(
 st.markdown("---")
 
 tab_cytoscape, tab_graphviz = st.tabs([
-    "⚡ Cytoscape Interactive Canvas (Curved Béziers & Draggable)",
-    "📐 Blueprint View (Refined Graphviz)"
+    "Interactive Canvas",
+    "Blueprint View"
 ])
 
 with tab_cytoscape:
