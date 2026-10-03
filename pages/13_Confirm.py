@@ -2,7 +2,8 @@ import streamlit as st
 from core.db import db
 from core.model_repo import get_process, get_process_master_model
 from core.ui import apply_inter_theme
-from agents.flowchart_agent import generate_dot
+from agents.flowchart_agent import generate_dot, generate_mermaid
+from analytics.flowchart_viewer import render_interactive_mermaid
 
 st.set_page_config(page_title="Auditee Confirmation Portal · FieldAI", page_icon="🤝", layout="wide")
 apply_inter_theme()
@@ -22,15 +23,28 @@ risks = model.get("risks", [])
 controls = model.get("controls", [])
 
 if steps:
-    dot_code = generate_dot(
-        process_name=proc["name"] if proc else "Audit Process",
-        version=proc["current_version"] if proc else "v1.0",
-        steps=steps,
-        risks=risks,
-        controls=controls,
-        lane_by="role"
-    )
-    st.graphviz_chart(dot_code, use_container_width=True)
+    f_tab1, f_tab2 = st.tabs(["🌟 Interactive Vector Diagram", "📐 Blueprint View"])
+    with f_tab1:
+        mermaid_code = generate_mermaid(
+            process_name=proc["name"] if proc else "Audit Process",
+            version=proc["current_version"] if proc else "v1.0",
+            steps=steps,
+            risks=risks,
+            controls=controls,
+            lane_by="role"
+        )
+        render_interactive_mermaid(mermaid_code, height=550)
+    with f_tab2:
+        dot_code = generate_dot(
+            process_name=proc["name"] if proc else "Audit Process",
+            version=proc["current_version"] if proc else "v1.0",
+            steps=steps,
+            risks=risks,
+            controls=controls,
+            lane_by="role",
+            spline_type="spline"
+        )
+        st.graphviz_chart(dot_code, use_container_width=True)
 
 st.divider()
 

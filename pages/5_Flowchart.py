@@ -3,12 +3,15 @@ from core.db import db
 from core.model_repo import get_process, get_process_master_model
 from core.storage import save_generated_document
 from core.agent_registry import render_deliverable_attribution
-from agents.flowchart_agent import generate_dot
+from core.ui import apply_inter_theme
+from agents.flowchart_agent import generate_dot, generate_mermaid
+from analytics.flowchart_viewer import render_interactive_mermaid
 from exports.bpmn import export_bpmn_xml
 from exports.drawio import export_drawio_xml
 from exports.pdf import export_process_summary_pdf
 
 st.set_page_config(page_title="Flowchart & Swimlanes · FieldAI", page_icon="🗺️", layout="wide")
+apply_inter_theme()
 
 if not st.session_state.get("user"):
     st.warning("Please sign in from the main page.")
@@ -32,10 +35,11 @@ if not steps:
     st.stop()
 
 # Controls & Configuration Bar
-col_c1, col_c2, col_c3 = st.columns([1, 1, 1])
+st.markdown("##### ⚙️ Flowchart Layout & Engineering Settings")
+col_c1, col_c2, col_c3, col_c4 = st.columns(4)
 
 with col_c1:
-    lane_mode = st.selectbox("Swimlane Layout", options=["Role (responsible_role)", "Department (department)", "System (system)"], index=0)
+    lane_mode = st.selectbox("Swimlane Grouping", options=["Role (responsible_role)", "Department (department)", "System (system)"], index=0)
     lane_key = "role" if "Role" in lane_mode else ("department" if "Department" in lane_mode else "system")
 
 with col_c2:
@@ -43,9 +47,16 @@ with col_c2:
     orient_key = "TB" if "TB" in orientation else "LR"
 
 with col_c3:
-    diff_mode = st.checkbox("🔍 Version Diff Mode (Show Withdrawn Items)", value=False)
+    detail_mode = st.selectbox("Node Detail Level", options=["Compact Summary (BPMN Style)", "Full Operational Narrative"], index=0)
+    is_compact = "Compact" in detail_mode
 
-# Generate DOT diagram
+with col_c4:
+    spline_choice = st.selectbox("Graphviz Line Routing", options=["Smooth Splines (No Overlaps)", "Polyline Curves", "Orthogonal (Grid)"], index=0)
+    spline_key = "spline" if "Smooth" in spline_choice else ("polyline" if "Polyline" in spline_choice else "ortho")
+
+diff_mode = st.checkbox("🔍 Version Diff Mode (Highlight Withdrawn Items)", value=False)
+
+# Generate both DOT and Mermaid models
 dot_code = generate_dot(
     process_name=proc["name"] if proc else "Audit Process",
     version=proc["current_version"] if proc else "v1.0",
@@ -54,12 +65,49 @@ dot_code = generate_dot(
     controls=controls,
     lane_by=lane_key,
     orientation=orient_key,
-    diff_mode=diff_mode
+    diff_mode=diff_mode,
+    spline_type=spline_key,
+    compact=is_compact
 )
 
-# Render Graphviz Flowchart in browser
-st.markdown("### 📊 Interactive Flow Diagram")
-st.graphviz_chart(dot_code, use_container_width=True)
+mermaid_code = generate_mermaid(
+    process_name=proc["name"] if proc else "Audit Process",
+    version=proc["current_version"] if proc else "v1.0",
+    steps=steps,
+    risks=risks,
+    controls=controls,
+    lane_by=lane_key,
+    orientation=orient_key,
+    compact=is_compact
+)
+
+st.markdown("---")
+
+tab_mermaid, tab_graphviz, tab_source = st.tabs([
+    "🌟 Interactive Vector Diagram (Mermaid Engine)",
+    "📐 Engineering Blueprint (Refined Graphviz Engine)",
+    "📝 Diagram Specifications & Source Code"
+])
+
+with tab_mermaid:
+    st.markdown("#### 🌟 Interactive Vector Swimlane Flowchart")
+    st.caption("Rendered with high-resolution vector SVG. Use the toolbar on top-right to zoom, pan, or download high-resolution SVG/PNG.")
+    render_interactive_mermaid(mermaid_code, height=650)
+
+with tab_graphviz:
+    st.markdown("#### 📐 High-Fidelity Graphviz Architecture Blueprint")
+    st.caption("Rendered via Graphviz with smooth spline routing, left-aligned swimlane headers, word-wrapped nodes, and proportional decision diamonds.")
+    st.graphviz_chart(dot_code, use_container_width=True)
+
+with tab_source:
+    st.markdown("#### 📝 Model Specification Code")
+    c_src1, c_src2 = st.columns(2)
+    with c_src1:
+        st.markdown("##### Mermaid Definition (`.mmd`)")
+        st.code(mermaid_code, language="mermaid")
+    with c_src2:
+        st.markdown("##### Graphviz DOT Definition (`.dot`)")
+        st.code(dot_code, language="dot")
 
 st.divider()
 
@@ -67,7 +115,7 @@ st.divider()
 st.subheader("📥 Export Deliverables")
 st.caption("Download flowcharts in standard editable engineering and diagramming formats:")
 
-exp1, exp2, exp3, exp4 = st.columns(4)
+exp1, exp2, exp3, exp4, exp5 = st.columns(5)
 
 with exp1:
     bpmn_xml = export_bpmn_xml(
@@ -136,6 +184,15 @@ with exp3:
     )
 
 with exp4:
+    st.download_button(
+        "Mermaid (.mmd)",
+        data=mermaid_code,
+        file_name=f"{proc.get('code_prefix', 'PROC')}_flow.mmd",
+        mime="text/plain",
+        use_container_width=True
+    )
+
+with exp5:
     st.download_button(
         "Graphviz DOT (.dot)",
         data=dot_code,
