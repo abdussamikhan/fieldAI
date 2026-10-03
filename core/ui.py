@@ -177,11 +177,16 @@ div[data-testid="stSidebarNavItems"] > div > span,
 [data-testid="stSidebarNav"] span[label="Admin"]::after {
     content: "System Admin" !important;
     font-size: 0.875rem !important;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
-    font-weight: 400 !important;
     visibility: visible !important;
 }
+
+/* Hide developer file-change / rerun prompt in header */
+[data-testid="stStatusWidget"] {
+    display: none !important;
+}
 </style>
+
+
 """
 
 def apply_inter_theme():
