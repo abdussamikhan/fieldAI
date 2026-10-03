@@ -189,7 +189,6 @@ def generate_mermaid(
     lines = [
         f"flowchart {orientation}",
         "  %% Styling theme definitions",
-        "  classDef default font-family:Inter,sans-serif,font-size:12px;",
         "  classDef startEnd fill:#10b981,stroke:#059669,stroke-width:1.5px,color:#ffffff,font-weight:500;",
         "  classDef endNode fill:#ef4444,stroke:#dc2626,stroke-width:1.5px,color:#ffffff,font-weight:500;",
         "  classDef processStep fill:#ffffff,stroke:#64748b,stroke-width:1.5px,color:#0f172a,rx:8px,ry:8px;",
@@ -397,11 +396,14 @@ def generate_cytoscape_elements(
                 })
 
     # Start and End Nodes
+    first_lane_id = "lane_1" if lanes else None
+    last_lane_id = f"lane_{len(lanes)}" if lanes else None
+
+    start_data = {"id": "start_node", "label": "Start"}
+    if first_lane_id:
+        start_data["parent"] = first_lane_id
     elements.append({
-        "data": {
-            "id": "start_node",
-            "label": "Start"
-        },
+        "data": start_data,
         "classes": "startEnd"
     })
 
@@ -420,11 +422,11 @@ def generate_cytoscape_elements(
         })
         curr_node = nxt_node
 
+    end_data = {"id": "end_node", "label": "End"}
+    if last_lane_id:
+        end_data["parent"] = last_lane_id
     elements.append({
-        "data": {
-            "id": "end_node",
-            "label": "End"
-        },
+        "data": end_data,
         "classes": "endNode"
     })
     elements.append({
