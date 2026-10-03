@@ -6,7 +6,12 @@ from core.model_repo import get_process
 from core.agent_registry import render_active_agent_pill, render_deliverable_attribution
 from core.ui import apply_inter_theme
 from graphs.orchestrator import run_task
-from analytics.visualizations import render_test_visualizations, create_metric_card
+from analytics.visualizations import (
+    render_test_visualizations,
+    create_metric_card,
+    render_sod_visualizations,
+    render_process_mining_visualizations
+)
 
 st.set_page_config(page_title="Audit Testing & Analytics · FieldAI", page_icon="🔬", layout="wide")
 apply_inter_theme()
@@ -248,20 +253,85 @@ with t2:
     sod_res = st.session_state.get("sod_res")
     if sod_res:
         conflicts = sod_res.get("sod_conflicts", [])
-        st.warning(sod_res.get("summary", f"Detected {len(conflicts)} toxic SoD permission combinations."))
-        for c in conflicts:
-            badge_color = "#ef4444" if c.get("severity") == "Critical" else "#f59e0b"
-            st.markdown(f"""
-            <div style="border-left: 4px solid {badge_color}; padding-left: 12px; margin-bottom: 12px; background: rgba(255,255,255,0.02); padding: 8px 12px; border-radius: 4px;">
-                <div style="font-size: 14px; font-weight: 500;">
-                    ⚠️ <strong>{c.get('user_name')}</strong> ({c.get('user_id')}) &bull; <span style="color: {badge_color}; font-size: 12px; text-transform: uppercase;">[{c.get('rule_code')} &bull; Severity: {c.get('severity')}]</span>
-                </div>
-                <div style="font-size: 13px; color: #94a3b8; margin-top: 4px;">{c.get('risk')}</div>
-                <div style="font-size: 12px; color: #64748b; margin-top: 4px;">
-                    <strong>Assigned Roles:</strong> {', '.join(c.get('conflicting_roles', []))} | <strong>Impacted Lanes:</strong> {', '.join(c.get('impacted_lanes', []))}
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
+        test_res = sod_res.get("test_result", {})
+        total_eval_users = test_res.get("total_users") or (df_sod_data["user_id"].nunique() if df_sod_data is not None and "user_id" in df_sod_data.columns else (len(df_sod_data) if df_sod_data is not None else 80))
+        crit_count = test_res.get("critical_count", sum(1 for c in conflicts if c.get("severity") == "Critical"))
+        high_count = test_res.get("high_count", sum(1 for c in conflicts if c.get("severity") == "High"))
+        uniq_conflicted = test_res.get("unique_conflicted_users", len(set(c.get("user_id") for c in conflicts if c.get("user_id"))))
+        penetration_pct = round((uniq_conflicted / total_eval_users) * 100, 1) if total_eval_users else 0.0
+
+        st.markdown("---")
+        st.subheader("🛡️ SoD Analysis Deliverables & Audit Results")
+
+        # Metric summary cards
+        m1, m2, m3, m4 = st.columns(4)
+        with m1:
+            create_metric_card("Users Evaluated", f"{total_eval_users:,}", "Active Personnel Matrix", "#38bdf8")
+        with m2:
+            create_metric_card("Toxic Combinations", f"{len(conflicts):,}", f"{crit_count} Critical, {high_count} High", "#ef4444")
+        with m3:
+            create_metric_card("Critical Severity", f"{crit_count:,}", "Privileged Admin Conflicts", "#dc2626")
+        with m4:
+            create_metric_card("Conflicted Users", f"{uniq_conflicted:,}", f"{penetration_pct}% Penetration Rate", "#f59e0b")
+
+        sod_tab1, sod_tab2, sod_tab3 = st.tabs([
+            "📝 AI SoD Audit Report",
+            "📈 Graphical SoD Analytics",
+            "⚠️ Identified Toxic Conflicts"
+        ])
+
+        with sod_tab1:
+            st.markdown("#### 🤖 AI-Generated Internal Controls & SoD Remediation Memo")
+            sod_ai_text = sod_res.get("ai_report") or test_res.get("ai_report", "")
+            if sod_ai_text:
+                st.markdown(sod_ai_text)
+                st.download_button(
+                    label="📥 Download Executive SoD Audit Report (.md)",
+                    data=sod_ai_text,
+                    file_name="FieldAI_SoD_Conflict_Analysis_Report.md",
+                    mime="text/markdown",
+                    key="dl_sod_ai_report"
+                )
+            else:
+                st.info("SoD AI Audit Report is being generated...")
+
+        with sod_tab2:
+            st.markdown("#### 📊 Visual SoD Conflict Analytics & Privilege Distribution")
+            render_sod_visualizations(conflicts, df_sod_data)
+
+        with sod_tab3:
+            st.markdown("#### 📋 Toxic Privilege Exception Ledger")
+            if conflicts:
+                df_conflicts_display = pd.DataFrame([
+                    {
+                        "Rule": c.get("rule_code"),
+                        "Severity": c.get("severity"),
+                        "User ID": c.get("user_id"),
+                        "Name": c.get("user_name"),
+                        "Risk Description": c.get("risk"),
+                        "Conflicting Roles": ", ".join(c.get("conflicting_roles", [])),
+                        "Impacted Lanes": ", ".join(c.get("impacted_lanes", []))
+                    } for c in conflicts
+                ])
+                st.caption(f"Displaying {len(df_conflicts_display)} identified toxic role combinations across evaluated user profiles:")
+                st.dataframe(df_conflicts_display, use_container_width=True, height=350)
+
+                st.markdown("##### Detailed Conflict Cards")
+                for c in conflicts:
+                    badge_color = "#ef4444" if c.get("severity") == "Critical" else "#f59e0b"
+                    st.markdown(f"""
+                    <div style="border-left: 4px solid {badge_color}; padding-left: 12px; margin-bottom: 10px; background: rgba(255,255,255,0.02); padding: 8px 12px; border-radius: 4px;">
+                        <div style="font-size: 14px; font-weight: 500;">
+                            ⚠️ {c.get('user_name')} ({c.get('user_id')}) &bull; <span style="color: {badge_color}; font-size: 12px; text-transform: uppercase;">[{c.get('rule_code')} &bull; Severity: {c.get('severity')}]</span>
+                        </div>
+                        <div style="font-size: 13px; color: #94a3b8; margin-top: 4px;">{c.get('risk')}</div>
+                        <div style="font-size: 12px; color: #64748b; margin-top: 4px;">
+                            Assigned Roles: {', '.join(c.get('conflicting_roles', []))} | Impacted Lanes: {', '.join(c.get('impacted_lanes', []))}
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+            else:
+                st.success("No toxic Segregation of Duties conflicts detected.")
 
 # Tab 3: Process Mining
 with t3:
@@ -328,36 +398,76 @@ with t3:
 
     pm_data = st.session_state.get("pm_data")
     if pm_data and pm_data.get("total_cases"):
-        st.success(f"Execution complete: Reconstructed {pm_data.get('total_cases')} case trajectories across {pm_data.get('distinct_variants')} distinct process flow variants.")
-
-        res_c1, res_c2, res_c3 = st.columns(3)
-        with res_c1:
-            st.metric("Analyzed Cases", pm_data.get("total_cases", 0))
-        with res_c2:
-            st.metric("Identified Flow Variants", pm_data.get("distinct_variants", 0))
-        with res_c3:
-            st.metric("Bypassed Control Cases", len(pm_data.get("bypassed_cases", [])))
-
-        st.markdown("#### Identified Flow Variants:")
-        for v in pm_data.get("variants", []):
-            is_comp = v.get("compliant")
-            badge = "<span style='color: #10b981; font-weight: 500;'>🟢 Compliant Golden Path</span>" if is_comp else "<span style='color: #ef4444; font-weight: 500;'>🔴 Control Bypass Detected</span>"
-            border_c = "rgba(16, 185, 129, 0.3)" if is_comp else "rgba(239, 68, 68, 0.4)"
-            st.markdown(f"""
-            <div style="background: rgba(255,255,255,0.02); padding: 10px 14px; border-radius: 6px; margin-bottom: 8px; border: 1px solid {border_c};">
-                <div style="font-size: 13px;"><code>{v.get('variant_flow')}</code></div>
-                <div style="font-size: 12px; color: #94a3b8; margin-top: 6px;">
-                    <strong>{v.get('case_count')}</strong> cases ({v.get('frequency_pct')}%) &bull; {badge}
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-
+        tot_cases = pm_data.get("total_cases", 0)
+        distinct_vars = pm_data.get("distinct_variants", 0)
         bypasses = pm_data.get("bypassed_cases", [])
-        if bypasses:
-            st.markdown("#### 🚨 Bypassed Control Cases:")
-            st.caption("Transactions where mandatory control gates (e.g., Goods Receipt or Pre-Approval) were circumvented:")
-            b_df = pd.DataFrame(bypasses)
-            st.dataframe(b_df, use_container_width=True)
+        bypassed_count = len(bypasses)
+        conformance_rate = pm_data.get("conformance_rate", round(((tot_cases - bypassed_count) / tot_cases) * 100, 1) if tot_cases else 0.0)
+        bypass_rate = pm_data.get("bypass_rate", round((bypassed_count / tot_cases) * 100, 1) if tot_cases else 0.0)
+        compliant_cases = pm_data.get("compliant_cases", tot_cases - bypassed_count)
+
+        st.markdown("---")
+        st.subheader("🔄 Process Mining Deliverables & Conformance Results")
+
+        # Metric summary cards
+        pm_m1, pm_m2, pm_m3, pm_m4 = st.columns(4)
+        with pm_m1:
+            create_metric_card("Analyzed Cases", f"{tot_cases:,}", "Procure-to-Pay Lifecycle", "#38bdf8")
+        with pm_m2:
+            create_metric_card("Conformance Rate", f"{conformance_rate}%", f"{compliant_cases:,} Golden Path Cases", "#10b981")
+        with pm_m3:
+            create_metric_card("Control Gate Bypasses", f"{bypassed_count:,}", f"{bypass_rate}% Deviation Rate", "#ef4444")
+        with pm_m4:
+            create_metric_card("Flow Variants", f"{distinct_vars:,}", "Reconstructed Pathways", "#f59e0b")
+
+        pm_tab1, pm_tab2, pm_tab3 = st.tabs([
+            "📝 AI Process Conformance Report",
+            "📈 Process Flow & Bypass Charts",
+            "🚨 Bypassed Control Cases"
+        ])
+
+        with pm_tab1:
+            st.markdown("#### 🤖 AI-Generated Process Mining & Conformance Audit Report")
+            pm_ai_text = pm_data.get("ai_report", "")
+            if pm_ai_text:
+                st.markdown(pm_ai_text)
+                st.download_button(
+                    label="📥 Download Executive Process Conformance Report (.md)",
+                    data=pm_ai_text,
+                    file_name="FieldAI_Process_Mining_Conformance_Report.md",
+                    mime="text/markdown",
+                    key="dl_pm_ai_report"
+                )
+            else:
+                st.info("Process mining AI report is being generated...")
+
+        with pm_tab2:
+            st.markdown("#### 📊 Event Log Flow Variants & Control Gate Visual Analytics")
+            render_process_mining_visualizations(pm_data, df_pm_data)
+
+        with pm_tab3:
+            st.markdown("#### 📋 Process Flow Variants & Bypassed Control Cases")
+            st.markdown("##### Identified Lifecycle Execution Variants")
+            for v in pm_data.get("variants", []):
+                is_comp = v.get("compliant")
+                badge = "<span style='color: #10b981; font-weight: 500;'>🟢 Compliant Golden Path</span>" if is_comp else "<span style='color: #ef4444; font-weight: 500;'>🔴 Control Bypass Detected</span>"
+                border_c = "rgba(16, 185, 129, 0.3)" if is_comp else "rgba(239, 68, 68, 0.4)"
+                st.markdown(f"""
+                <div style="background: rgba(255,255,255,0.02); padding: 10px 14px; border-radius: 6px; margin-bottom: 8px; border: 1px solid {border_c};">
+                    <div style="font-size: 13px;"><code>{v.get('variant_flow')}</code></div>
+                    <div style="font-size: 12px; color: #94a3b8; margin-top: 6px;">
+                        {v.get('case_count')} cases ({v.get('frequency_pct')}%) &bull; {badge}
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+            if bypasses:
+                st.markdown("##### 🚨 Bypassed Control Cases Ledger")
+                st.caption(f"Transactions where mandatory control gates (e.g., Goods Receipt or Pre-Approval) were circumvented ({len(bypasses)} cases):")
+                b_df = pd.DataFrame(bypasses)
+                st.dataframe(b_df, use_container_width=True, height=350)
+            else:
+                st.success("All transactions adhered strictly to defined control gates!")
 
 # Tab 4: Evidence Reader
 with t4:

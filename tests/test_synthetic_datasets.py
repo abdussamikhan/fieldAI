@@ -61,6 +61,12 @@ def test_sod_large_dataset():
     res = sod_agent.run({"test_request": {"test_type": "sod", "user_access": df}})
     conflicts = res.get("sod_conflicts", [])
     assert len(conflicts) >= 10
+    t_res = res.get("test_result", {})
+    assert "ai_report" in t_res
+    assert "Executive Summary" in t_res["ai_report"]
+    assert t_res["critical_count"] >= 1
+    assert t_res["high_count"] >= 1
+    assert t_res["unique_conflicted_users"] >= 1
 
 def test_process_mining_large_dataset():
     p = Path("sample_data/erp_event_log_large.csv")
@@ -74,6 +80,10 @@ def test_process_mining_large_dataset():
     assert pm.get("total_cases") >= 50
     assert pm.get("distinct_variants") >= 3
     assert len(pm.get("bypassed_cases", [])) >= 10
+    assert "ai_report" in pm
+    assert "Executive Summary" in pm["ai_report"]
+    assert pm.get("conformance_rate", 0) > 0
+    assert pm.get("bypass_rate", 0) > 0
 
 def test_centralized_storage_samples():
     files = list_storage_files()
@@ -97,6 +107,8 @@ def test_orchestrator_process_mining_e2e():
     assert pm.get("total_cases") == 100
     assert pm.get("distinct_variants") >= 3
     assert len(pm.get("bypassed_cases", [])) >= 10
+    assert "ai_report" in pm
+    assert "Executive Summary" in pm["ai_report"]
 
 def test_orchestrator_sod_e2e():
     from graphs.orchestrator import run_task
@@ -110,6 +122,8 @@ def test_orchestrator_sod_e2e():
     })
     assert "sod_conflicts" in res
     assert len(res["sod_conflicts"]) >= 10
+    assert "ai_report" in res.get("test_result", {})
+    assert "Executive Summary" in res["test_result"]["ai_report"]
 
 def test_analytics_ai_report_and_metrics():
     from graphs.orchestrator import run_task

@@ -353,3 +353,84 @@ def render_test_visualizations(test_id: str, df_exc: pd.DataFrame, df_full: pd.D
         render_an08_threeway_charts(df_exc, df_full)
     else:
         render_generic_charts(df_exc, df_full)
+
+def render_sod_visualizations(conflicts: List[Dict[str, Any]], df_user_access: pd.DataFrame):
+    """Renders interactive charts for Segregation of Duties conflict analysis."""
+    if not conflicts:
+        st.info("No SoD conflicts to visualize.")
+        return
+
+    df_c = pd.DataFrame(conflicts)
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown("##### 🛡️ Conflicting Privileges by Toxic Rule Code")
+        if "rule_code" in df_c.columns:
+            rule_counts = df_c.groupby(["rule_code", "severity"]).size().reset_index(name="count")
+            chart = alt.Chart(rule_counts).mark_bar(cornerRadiusTopRight=4, cornerRadiusBottomRight=4).encode(
+                x=alt.X("count:Q", title="Number of Toxic Assignments"),
+                y=alt.Y("rule_code:N", sort="-x", title="SoD Rule Code"),
+                color=alt.Color("severity:N", scale=alt.Scale(domain=["Critical", "High", "Medium"], range=["#ef4444", "#f59e0b", "#3b82f6"]), title="Severity"),
+                tooltip=[alt.Tooltip("rule_code:N", title="Rule"), alt.Tooltip("severity:N"), alt.Tooltip("count:Q", title="Violations")]
+            ).properties(height=320)
+            st.altair_chart(chart, use_container_width=True)
+
+    with c2:
+        st.markdown("##### 🏢 Conflict Distribution Across Process Lanes")
+        lanes = []
+        for c in conflicts:
+            for l in c.get("impacted_lanes", []):
+                lanes.append({"lane": l, "severity": c.get("severity", "High")})
+        if lanes:
+            df_lanes = pd.DataFrame(lanes)
+            lane_counts = df_lanes.groupby(["lane", "severity"]).size().reset_index(name="count")
+            chart2 = alt.Chart(lane_counts).mark_bar(cornerRadiusTopRight=4, cornerRadiusBottomRight=4).encode(
+                x=alt.X("count:Q", title="Conflicting Roles"),
+                y=alt.Y("lane:N", sort="-x", title="Process Lane"),
+                color=alt.Color("severity:N", scale=alt.Scale(domain=["Critical", "High", "Medium"], range=["#ef4444", "#f59e0b", "#3b82f6"]), title="Severity"),
+                tooltip=[alt.Tooltip("lane:N", title="Lane"), alt.Tooltip("count:Q", title="Conflicts")]
+            ).properties(height=320)
+            st.altair_chart(chart2, use_container_width=True)
+
+def render_process_mining_visualizations(pm_data: Dict[str, Any], df_event_log: pd.DataFrame):
+    """Renders interactive charts for Process Mining variant & bypass analysis."""
+    variants = pm_data.get("variants", [])
+    bypasses = pm_data.get("bypassed_cases", [])
+    if not variants:
+        st.info("No process mining variants to visualize.")
+        return
+
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown("##### 🔄 Process Execution Flow Variant Distribution")
+        df_vars = pd.DataFrame(variants).copy()
+        df_vars["Variant"] = [f"Variant {chr(65+i)} ({v.get('case_count')} cases)" for i, v in enumerate(variants)]
+        df_vars["Status"] = df_vars["compliant"].apply(lambda x: "Compliant Golden Path" if x else "Control Bypass")
+        
+        chart1 = alt.Chart(df_vars).mark_bar(cornerRadiusTopRight=4, cornerRadiusBottomRight=4).encode(
+            x=alt.X("frequency_pct:Q", title="Share of Total Population (%)"),
+            y=alt.Y("Variant:N", sort="-x", title="Identified Variant Pathway"),
+            color=alt.Color("Status:N", scale=alt.Scale(domain=["Compliant Golden Path", "Control Bypass"], range=["#10b981", "#ef4444"]), title="Control State"),
+            tooltip=[alt.Tooltip("Variant:N"), alt.Tooltip("frequency_pct:Q", title="Share (%)", format=".1f"), alt.Tooltip("case_count:Q", title="Cases"), alt.Tooltip("Status:N")]
+        ).properties(height=320)
+        st.altair_chart(chart1, use_container_width=True)
+
+    with c2:
+        st.markdown("##### 🚨 Control Gate Bypasses by Root Violation Type")
+        if bypasses:
+            df_b = pd.DataFrame(bypasses).copy()
+            df_b["Violation Category"] = df_b["reason"].apply(
+                lambda r: "Missing Goods Receipt (GRN)" if "receipt" in r.lower() or "grn" in r.lower() 
+                else ("Retroactive PR Approval" if "retroactive" in r.lower() or "prior" in r.lower()
+                else "Emergency / Unbudgeted PO")
+            )
+            b_counts = df_b.groupby(["Violation Category", "severity"]).size().reset_index(name="count")
+            chart2 = alt.Chart(b_counts).mark_bar(cornerRadiusTopRight=4, cornerRadiusBottomRight=4).encode(
+                x=alt.X("count:Q", title="Number of Bypassed Cases"),
+                y=alt.Y("Violation Category:N", sort="-x", title="Control Gate Bypassed"),
+                color=alt.Color("severity:N", scale=alt.Scale(domain=["Critical", "High", "Medium"], range=["#ef4444", "#f59e0b", "#38bdf8"]), title="Severity"),
+                tooltip=[alt.Tooltip("Violation Category:N"), alt.Tooltip("count:Q", title="Cases Affected"), alt.Tooltip("severity:N")]
+            ).properties(height=320)
+            st.altair_chart(chart2, use_container_width=True)
+        else:
+            st.success("All transactions adhered strictly to defined control gates!")
+
