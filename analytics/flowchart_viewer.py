@@ -328,66 +328,6 @@ def render_interactive_mermaid(mermaid_code: str, height: int = 650) -> None:
     """
 
     components.html(html_content, height=height + 15, scrolling=False)
-                image.onload = () => {{
-                  const canvas = document.createElement('canvas');
-                  const scale = 2.0; // High resolution
-                  canvas.width = (svgElement.clientWidth || 1200) * scale;
-                  canvas.height = (svgElement.clientHeight || 800) * scale;
-                  const context = canvas.getContext('2d');
-                  context.fillStyle = '#ffffff';
-                  context.fillRect(0, 0, canvas.width, canvas.height);
-                  context.drawImage(image, 0, 0, canvas.width, canvas.height);
-                  const pngUrl = canvas.toDataURL('image/png');
-                  const a = document.createElement('a');
-                  a.href = pngUrl;
-                  a.download = 'FieldAI_Process_Flowchart.png';
-                  document.body.appendChild(a);
-                  a.click();
-                  document.body.removeChild(a);
-                }};
-                image.src = blobURL;
-              }};
-            }}
-          }} catch (err) {{
-            console.error('Mermaid render error:', err);
-            document.getElementById('mermaid-target').innerHTML = `
-              <div class="error-box">
-                <h4 style="margin: 0 0 8px 0; color: #f87171;">Diagram Rendering Notice</h4>
-                <div style="font-size: 12px; color: #cbd5e1;">${{err.message || 'Syntax or rendering error in flowchart specification.'}}</div>
-              </div>
-            `;
-          }}
-        }}
-
-        // Listen for container resize / tab visibility switch
-        if (typeof ResizeObserver !== 'undefined') {{
-          const observer = new ResizeObserver((entries) => {{
-            for (let entry of entries) {{
-              if (entry.contentRect.width > 20 && entry.contentRect.height > 20) {{
-                if (!panZoomInstance && svgElement) {{
-                  setupPanZoom();
-                }} else if (panZoomInstance) {{
-                  panZoomInstance.resize();
-                  panZoomInstance.fit();
-                  panZoomInstance.center();
-                }}
-              }}
-            }}
-          }});
-          observer.observe(document.getElementById('diagram-wrapper'));
-        }}
-
-        if (document.readyState === 'loading') {{
-          document.addEventListener('DOMContentLoaded', renderDiagram);
-        }} else {{
-          renderDiagram();
-        }}
-      </script>
-    </body>
-    </html>
-    """
-
-    components.html(html_content, height=height + 15, scrolling=False)
 
 def render_interactive_cytoscape(
     elements: list,
