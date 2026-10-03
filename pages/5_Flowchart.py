@@ -4,11 +4,12 @@ from core.model_repo import get_process, get_process_master_model
 from core.storage import save_generated_document
 from core.agent_registry import render_deliverable_attribution
 from core.ui import apply_inter_theme
-from agents.flowchart_agent import generate_dot, generate_mermaid
-from analytics.flowchart_viewer import render_interactive_mermaid
+from agents.flowchart_agent import generate_dot, generate_mermaid, generate_cytoscape_elements
+from analytics.flowchart_viewer import render_interactive_mermaid, render_interactive_cytoscape
 from exports.bpmn import export_bpmn_xml
 from exports.drawio import export_drawio_xml
 from exports.pdf import export_process_summary_pdf
+import json
 
 st.set_page_config(page_title="Flowchart & Swimlanes · FieldAI", page_icon="🗺️", layout="wide")
 apply_inter_theme()
@@ -36,7 +37,7 @@ if not steps:
 
 # Controls & Configuration Bar
 st.markdown("##### ⚙️ Flowchart Layout & Engineering Settings")
-col_c1, col_c2, col_c3, col_c4 = st.columns(4)
+col_c1, col_c2, col_c3, col_c4, col_c5 = st.columns(5)
 
 with col_c1:
     lane_mode = st.selectbox("Swimlane Grouping", options=["Role (responsible_role)", "Department (department)", "System (system)"], index=0)
@@ -54,9 +55,23 @@ with col_c4:
     spline_choice = st.selectbox("Graphviz Line Routing", options=["Smooth Splines (No Overlaps)", "Polyline Curves", "Orthogonal (Grid)"], index=0)
     spline_key = "spline" if "Smooth" in spline_choice else ("polyline" if "Polyline" in spline_choice else "ortho")
 
+with col_c5:
+    cy_curve = st.selectbox("Cytoscape Curve Style", options=["Smooth Bézier (bezier)", "Unbundled Bézier (unbundled-bezier)", "Taxi Curves (taxi)"], index=0)
+    cy_curve_key = "bezier" if "Smooth" in cy_curve else ("unbundled-bezier" if "Unbundled" in cy_curve else "taxi")
+
 diff_mode = st.checkbox("🔍 Version Diff Mode (Highlight Withdrawn Items)", value=False)
 
-# Generate both DOT and Mermaid models
+# Generate models for all engines
+cy_elements = generate_cytoscape_elements(
+    process_name=proc["name"] if proc else "Audit Process",
+    version=proc["current_version"] if proc else "v1.0",
+    steps=steps,
+    risks=risks,
+    controls=controls,
+    lane_by=lane_key,
+    compact=is_compact
+)
+
 dot_code = generate_dot(
     process_name=proc["name"] if proc else "Audit Process",
     version=proc["current_version"] if proc else "v1.0",
@@ -83,11 +98,17 @@ mermaid_code = generate_mermaid(
 
 st.markdown("---")
 
-tab_mermaid, tab_graphviz, tab_source = st.tabs([
-    "🌟 Interactive Vector Diagram (Mermaid Engine)",
-    "📐 Engineering Blueprint (Refined Graphviz Engine)",
+tab_cytoscape, tab_mermaid, tab_graphviz, tab_source = st.tabs([
+    "⚡ Cytoscape Interactive Canvas (Curved Béziers & Draggable)",
+    "🌟 Vector Diagram (Mermaid Engine)",
+    "📐 Blueprint View (Refined Graphviz)",
     "📝 Diagram Specifications & Source Code"
 ])
+
+with tab_cytoscape:
+    st.markdown("#### ⚡ Cytoscape.js Process Flow Canvas (Dagre + Bézier Curves)")
+    st.caption("Draggable nodes, obstacle-aware smooth curved lines, small Inter font styling, and click-to-inspect audit drawer.")
+    render_interactive_cytoscape(cy_elements, orientation=orient_key, curve_style=cy_curve_key, height=650)
 
 with tab_mermaid:
     st.markdown("#### 🌟 Interactive Vector Swimlane Flowchart")
@@ -101,11 +122,14 @@ with tab_graphviz:
 
 with tab_source:
     st.markdown("#### 📝 Model Specification Code")
-    c_src1, c_src2 = st.columns(2)
+    c_src1, c_src2, c_src3 = st.columns(3)
     with c_src1:
+        st.markdown("##### Cytoscape JSON Elements")
+        st.code(json.dumps(cy_elements[:5], indent=2), language="json")
+    with c_src2:
         st.markdown("##### Mermaid Definition (`.mmd`)")
         st.code(mermaid_code, language="mermaid")
-    with c_src2:
+    with c_src3:
         st.markdown("##### Graphviz DOT Definition (`.dot`)")
         st.code(dot_code, language="dot")
 
@@ -115,7 +139,7 @@ st.divider()
 st.subheader("📥 Export Deliverables")
 st.caption("Download flowcharts in standard editable engineering and diagramming formats:")
 
-exp1, exp2, exp3, exp4, exp5 = st.columns(5)
+exp1, exp2, exp3, exp4, exp5, exp6 = st.columns(6)
 
 with exp1:
     bpmn_xml = export_bpmn_xml(
@@ -198,5 +222,14 @@ with exp5:
         data=dot_code,
         file_name=f"{proc.get('code_prefix', 'PROC')}_flow.dot",
         mime="text/vnd.graphviz",
+        use_container_width=True
+    )
+
+with exp6:
+    st.download_button(
+        "Cytoscape (.json)",
+        data=json.dumps(cy_elements, indent=2),
+        file_name=f"{proc.get('code_prefix', 'PROC')}_flow.json",
+        mime="application/json",
         use_container_width=True
     )

@@ -270,10 +270,178 @@ def generate_mermaid(
     lines.append(f"  {curr_node} --> endNode([End]):::endNode")
     return "\n".join(lines)
 
+def generate_cytoscape_elements(
+    process_name: str,
+    version: str,
+    steps: List[Dict[str, Any]],
+    risks: List[Dict[str, Any]],
+    controls: List[Dict[str, Any]],
+    lane_by: str = "role",
+    compact: bool = False
+) -> List[Dict[str, Any]]:
+    """
+    Generates Cytoscape.js compatible graph elements (nodes, compound swimlanes, edges, badges).
+    """
+    lane_keys = {
+        "role": "responsible_role",
+        "department": "department",
+        "system": "system"
+    }
+    lane_attr = lane_keys.get(lane_by, "responsible_role")
+    lane_icons = {
+        "role": "👤",
+        "department": "🏢",
+        "system": "⚙️"
+    }
+    icon = lane_icons.get(lane_by, "📋")
+
+    elements = []
+
+    # Group steps by lane
+    lanes = {}
+    for s in steps:
+        lane_val = s.get(lane_attr) or "General"
+        if lane_val not in lanes:
+            lanes[lane_val] = []
+        lanes[lane_val].append(s)
+
+    # 1. Swimlane parent compound nodes
+    for idx, (lane_name, lane_steps) in enumerate(lanes.items(), 1):
+        lane_id = f"lane_{idx}"
+        elements.append({
+            "data": {
+                "id": lane_id,
+                "label": f"{icon} {lane_name.upper()}",
+                "is_lane": True
+            },
+            "classes": "swimlane"
+        })
+
+        for s in lane_steps:
+            code = s.get("step_code", "")
+            node_id = f"node_{code.replace('-', '_')}"
+            desc = s.get("description", "").strip()
+            is_decision = s.get("is_decision", False)
+
+            if compact:
+                summary = desc.split(".")[0].strip() if "." in desc else desc
+                wrap_w = 20 if is_decision else 26
+                wrapped_desc = "\n".join(textwrap.wrap(summary, width=wrap_w, break_long_words=False))
+            else:
+                wrap_w = 22 if is_decision else 28
+                wrapped_desc = "\n".join(textwrap.wrap(desc, width=wrap_w, break_long_words=False))
+
+            node_label = f"[{code}]\n{wrapped_desc}"
+
+            elements.append({
+                "data": {
+                    "id": node_id,
+                    "parent": lane_id,
+                    "label": node_label,
+                    "step_code": code,
+                    "description": desc,
+                    "is_decision": is_decision,
+                    "responsible_role": s.get("responsible_role", ""),
+                    "department": s.get("department", ""),
+                    "system": s.get("system", "")
+                },
+                "classes": "decisionStep" if is_decision else "processStep"
+            })
+
+            # Risk badges
+            matched_risks = [r for r in risks if code in r.get("step_codes", [])]
+            for r in matched_risks:
+                r_code = r.get("risk_code")
+                r_id = f"risk_{node_id}_{r_code.replace('-', '_')}"
+                has_ctrl = bool(r.get("control_codes"))
+                elements.append({
+                    "data": {
+                        "id": r_id,
+                        "parent": lane_id,
+                        "label": f"⚠️ {r_code}: Risk",
+                        "risk_code": r_code,
+                        "has_control": has_ctrl
+                    },
+                    "classes": "riskBadge" if has_ctrl else "unmitigatedRisk"
+                })
+                elements.append({
+                    "data": {
+                        "id": f"e_{r_id}",
+                        "source": node_id,
+                        "target": r_id
+                    },
+                    "classes": "badgeEdge"
+                })
+
+            # Control badges
+            matched_ctrls = [c for c in controls if code in c.get("step_codes", [])]
+            for c in matched_ctrls:
+                c_code = c.get("control_code")
+                c_id = f"ctrl_{node_id}_{c_code.replace('-', '_')}"
+                elements.append({
+                    "data": {
+                        "id": c_id,
+                        "parent": lane_id,
+                        "label": f"🛡️ {c_code}: Control",
+                        "control_code": c_code
+                    },
+                    "classes": "controlBadge"
+                })
+                elements.append({
+                    "data": {
+                        "id": f"e_{c_id}",
+                        "source": node_id,
+                        "target": c_id
+                    },
+                    "classes": "badgeEdge"
+                })
+
+    # Start and End Nodes
+    elements.append({
+        "data": {
+            "id": "start_node",
+            "label": "Start"
+        },
+        "classes": "startEnd"
+    })
+
+    sorted_steps = sorted(steps, key=lambda x: x.get("order_num", 1))
+    curr_node = "start_node"
+    for s in sorted_steps:
+        code = s.get("step_code", "")
+        nxt_node = f"node_{code.replace('-', '_')}"
+        elements.append({
+            "data": {
+                "id": f"flow_{curr_node}_{nxt_node}",
+                "source": curr_node,
+                "target": nxt_node
+            },
+            "classes": "sequenceEdge"
+        })
+        curr_node = nxt_node
+
+    elements.append({
+        "data": {
+            "id": "end_node",
+            "label": "End"
+        },
+        "classes": "endNode"
+    })
+    elements.append({
+        "data": {
+            "id": f"flow_{curr_node}_end",
+            "source": curr_node,
+            "target": "end_node"
+        },
+        "classes": "sequenceEdge"
+    })
+
+    return elements
+
 def run(state: FieldAIState) -> Dict[str, Any]:
     """
     Flowchart Agent (FR-3.x, 4.x):
-    Generates Graphviz DOT and Mermaid representations of master process flow with lanes, badges, and controls.
+    Generates Graphviz DOT, Mermaid, and Cytoscape representations of master process flow with lanes, badges, and controls.
     """
     process_id = state.get("process_id", 1)
     proc = get_process(process_id)
@@ -306,8 +474,18 @@ def run(state: FieldAIState) -> Dict[str, Any]:
         orientation="TB"
     )
 
+    cytoscape_elements = generate_cytoscape_elements(
+        process_name=p_name,
+        version=p_ver,
+        steps=steps,
+        risks=risks,
+        controls=controls,
+        lane_by="role"
+    )
+
     deliverables = state.get("deliverables", {})
     deliverables["flowchart_dot"] = dot_code
     deliverables["flowchart_mermaid"] = mermaid_code
+    deliverables["flowchart_cytoscape"] = cytoscape_elements
     return {"deliverables": deliverables}
 
