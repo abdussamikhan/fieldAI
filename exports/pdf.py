@@ -1,13 +1,17 @@
 import io
 import os
+import html
+import re
+from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Any
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfgen import canvas
 
 # Register Inter font if TTF asset exists
 FONT_NAME = "Helvetica"
@@ -206,106 +210,333 @@ def export_findings_pdf(findings: List[Dict[str, Any]], process_name: str = "") 
     doc.build(story)
     return buffer.getvalue()
 
-def export_executive_audit_report_pdf(title: str, report_text: str, test_id: str = "") -> bytes:
-    """Exports AI Executive Audit Findings Memo to a styled ReportLab PDF."""
-    import html
-    import re
-    buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=letter, rightMargin=36, leftMargin=36, topMargin=36, bottomMargin=36)
-    story = []
-    styles = getSampleStyleSheet()
+class NumberedCanvas(canvas.Canvas):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._saved_page_states = []
 
-    title_style = ParagraphStyle(
-        'ExecTitle',
-        parent=styles['Heading1'],
-        fontName=FONT_NAME,
-        fontSize=16,
-        leading=20,
-        textColor=colors.HexColor('#0f172a'),
-        spaceAfter=4
+    def showPage(self):
+        self._saved_page_states.append(dict(self.__dict__))
+        self._startPage()
+
+    def save(self):
+        num_pages = len(self._saved_page_states)
+        for state in self._saved_page_states:
+            self.__dict__.update(state)
+            self.draw_page_decorations(num_pages)
+            super().showPage()
+        super().save()
+
+    def draw_page_decorations(self, page_count):
+        self.saveState()
+        self.setFont("Helvetica", 8)
+        self.setFillColor(colors.HexColor('#94a3b8'))
+        # Footer
+        self.drawString(36, 24, "FieldAI | Continuous Audit Analytics & Fieldwork Assistant")
+        page_text = f"Page {self._pageNumber} of {page_count}"
+        self.drawRightString(letter[0] - 36, 24, page_text)
+        # Thin footer line
+        self.setStrokeColor(colors.HexColor('#e2e8f0'))
+        self.setLineWidth(0.5)
+        self.line(36, 34, letter[0] - 36, 34)
+        self.restoreState()
+
+def _format_inline_markdown(text: str) -> str:
+    text = html.escape(text.strip())
+    text = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', text)
+    text = re.sub(r'__(.*?)__', r'<b>\1</b>', text)
+    text = re.sub(r'(?<!\w)\*(.*?)\*(?!\w)', r'<i>\1</i>', text)
+    text = re.sub(r'`(.*?)`', r'<font name="Courier" color="#0284c7"><b>\1</b></font>', text)
+    return text
+
+def _parse_markdown_table(lines: list, font_name: str):
+    raw_rows = []
+    for line in lines:
+        line_s = line.strip()
+        if not line_s or not line_s.startswith("|"):
+            continue
+        cells = [c.strip() for c in line_s[1:-1].split("|")]
+        if all(re.match(r'^:?-+:?$', c) for c in cells if c):
+            continue
+        raw_rows.append(cells)
+
+    if not raw_rows:
+        return None
+
+    num_cols = max(len(r) for r in raw_rows)
+    for r in raw_rows:
+        while len(r) < num_cols:
+            r.append("")
+
+    total_width = 540
+    if num_cols == 2:
+        col_widths = [190, 350]
+    elif num_cols == 3:
+        col_widths = [140, 180, 220]
+    elif num_cols == 4:
+        col_widths = [110, 140, 140, 150]
+    else:
+        col_widths = [total_width / num_cols] * num_cols
+
+    hdr_style = ParagraphStyle(
+        'TblHdr',
+        fontName=font_name,
+        fontSize=8.5,
+        leading=11,
+        textColor=colors.white
     )
-    subtitle_style = ParagraphStyle(
-        'ExecSubTitle',
-        parent=styles['Normal'],
-        fontName=FONT_NAME,
-        fontSize=10,
-        leading=14,
-        textColor=colors.HexColor('#64748b'),
-        spaceAfter=14
+    cell_style = ParagraphStyle(
+        'TblCell',
+        fontName=font_name,
+        fontSize=8.5,
+        leading=12,
+        textColor=colors.HexColor('#1e293b')
     )
+
+    table_data = []
+    for row_idx, r in enumerate(raw_rows):
+        row_cells = []
+        for c in r:
+            formatted_text = _format_inline_markdown(c)
+            if row_idx == 0:
+                p = Paragraph(f"<b>{formatted_text}</b>", hdr_style)
+            else:
+                p = Paragraph(formatted_text, cell_style)
+            row_cells.append(p)
+        table_data.append(row_cells)
+
+    t = Table(table_data, colWidths=col_widths)
+    t_style = [
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1e293b')),
+        ('TOPPADDING', (0, 0), (-1, -1), 4.5),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4.5),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cbd5e1')),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+    ]
+    for r_idx in range(1, len(table_data)):
+        bg = colors.HexColor('#f8fafc') if r_idx % 2 == 1 else colors.white
+        t_style.append(('BACKGROUND', (0, r_idx), (-1, r_idx), bg))
+
+    t.setStyle(TableStyle(t_style))
+    return t
+
+def export_executive_audit_report_pdf(title: str, report_text: str, test_id: str = "") -> bytes:
+    """Exports AI Executive Audit Findings Memo to a professionally styled ReportLab PDF."""
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter, rightMargin=36, leftMargin=36, topMargin=36, bottomMargin=42)
+    story = []
+
+    doc_title = title.strip() if title and title.strip() else "Internal Audit Findings & Exception Report"
+    
+    # Title Banner with Accent
+    title_table = Table([[
+        Paragraph(f"<b>{html.escape(doc_title)}</b>", ParagraphStyle(
+            'DocTitle',
+            fontName=FONT_NAME,
+            fontSize=15,
+            leading=18,
+            textColor=colors.HexColor('#0f172a')
+        )),
+        Paragraph(f"<font color='#0284c7'><b>FieldAI Analytics</b></font><br/><font color='#64748b' size='7.5'>{html.escape(test_id) if test_id else 'Continuous Assurance'}</font>", ParagraphStyle(
+            'RightBadge',
+            fontName=FONT_NAME,
+            fontSize=9,
+            leading=12,
+            alignment=2
+        ))
+    ]], colWidths=[400, 140])
+    title_table.setStyle(TableStyle([
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+    ]))
+    story.append(title_table)
+    story.append(HRFlowable(width="100%", thickness=1.5, color=colors.HexColor('#0284c7'), spaceBefore=2, spaceAfter=8))
+
+    lines = report_text.splitlines() if report_text else []
+    i = 0
+    in_meta = True
+    meta_rows = []
+
     h1_style = ParagraphStyle(
-        'ReportH1',
-        parent=styles['Heading2'],
+        'H1Sec',
         fontName=FONT_NAME,
         fontSize=12,
         leading=16,
         textColor=colors.HexColor('#0284c7'),
-        spaceBefore=10,
-        spaceAfter=4
+        spaceBefore=12,
+        spaceAfter=5
     )
     h2_style = ParagraphStyle(
-        'ReportH2',
-        parent=styles['Heading3'],
+        'H2Sub',
         fontName=FONT_NAME,
-        fontSize=11,
-        leading=15,
+        fontSize=10,
+        leading=13.5,
         textColor=colors.HexColor('#0f172a'),
         spaceBefore=8,
-        spaceAfter=3
+        spaceAfter=4,
+        keepWithNext=True
     )
     body_style = ParagraphStyle(
-        'ReportBody',
-        parent=styles['Normal'],
+        'BodyTxt',
         fontName=FONT_NAME,
-        fontSize=9.5,
-        leading=14,
+        fontSize=9,
+        leading=13.5,
         textColor=colors.HexColor('#1e293b'),
         spaceAfter=5
     )
     bullet_style = ParagraphStyle(
-        'ReportBullet',
-        parent=styles['Normal'],
+        'BulletTxt',
         fontName=FONT_NAME,
-        fontSize=9.5,
-        leading=14,
+        fontSize=9,
+        leading=13.5,
         textColor=colors.HexColor('#1e293b'),
-        leftIndent=15,
-        spaceAfter=3
+        leftIndent=14,
+        spaceAfter=3.5
+    )
+    meta_key_style = ParagraphStyle(
+        'MetaKey',
+        fontName=FONT_NAME,
+        fontSize=8.5,
+        leading=11.5,
+        textColor=colors.HexColor('#475569')
+    )
+    meta_val_style = ParagraphStyle(
+        'MetaVal',
+        fontName=FONT_NAME,
+        fontSize=8.5,
+        leading=11.5,
+        textColor=colors.HexColor('#0f172a')
     )
 
-    doc_title = title if title else "FieldAI Executive Audit Report"
-    story.append(Paragraph(html.escape(doc_title), title_style))
-    id_str = f"Test ID: {html.escape(test_id)} &bull; " if test_id else ""
-    story.append(Paragraph(f"{id_str}Generated by FieldAI Multi-Agent Analytics", subtitle_style))
-    story.append(Spacer(1, 8))
+    def flush_meta():
+        nonlocal meta_rows, in_meta
+        if meta_rows:
+            t_meta = Table(meta_rows, colWidths=[160, 380])
+            t_meta.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#f8fafc')),
+                ('LINELEFT', (0, 0), (0, -1), 3.5, colors.HexColor('#38bdf8')),
+                ('TOPPADDING', (0, 0), (-1, -1), 3),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+                ('LEFTPADDING', (0, 0), (-1, -1), 8),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+                ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ]))
+            story.append(t_meta)
+            story.append(Spacer(1, 8))
+            meta_rows = []
+        in_meta = False
 
-    for line in report_text.splitlines():
-        line_s = line.strip()
-        if not line_s:
-            story.append(Spacer(1, 4))
+    while i < len(lines):
+        line = lines[i].strip()
+        if not line:
+            i += 1
             continue
-        
-        if line_s.startswith("### "):
-            header_text = html.escape(line_s[4:])
-            story.append(Paragraph(header_text, h2_style))
-        elif line_s.startswith("## "):
-            header_text = html.escape(line_s[3:])
-            story.append(Paragraph(header_text, h1_style))
-        elif line_s.startswith("# "):
-            header_text = html.escape(line_s[2:])
-            story.append(Paragraph(header_text, h1_style))
-        elif line_s.startswith("- ") or line_s.startswith("* "):
-            bullet_text = html.escape(line_s[2:])
-            bullet_text = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', bullet_text)
-            story.append(Paragraph(f"&bull; {bullet_text}", bullet_style))
-        elif re.match(r'^\d+\.\s+', line_s):
-            num_text = html.escape(line_s)
-            num_text = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', num_text)
-            story.append(Paragraph(num_text, bullet_style))
-        else:
-            p_text = html.escape(line_s)
-            p_text = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', p_text)
-            story.append(Paragraph(p_text, body_style))
 
-    doc.build(story)
+        # Skip duplicate doc title if repeated in the text
+        if line.lower() in ("internal audit findings & exception report", "# internal audit findings & exception report", doc_title.lower()):
+            i += 1
+            continue
+
+        # Collect metadata block before first table/section
+        if in_meta and ":" in line and not line.startswith("|") and not line.startswith(("-", "*", "#")) and not re.match(r'^\d+\.', line):
+            parts = line.split(":", 1)
+            k = parts[0].strip()
+            v = parts[1].strip()
+            if "[insert date]" in v.lower():
+                v = datetime.now().strftime("%B %d, %Y")
+            
+            if "risk rating" in k.lower():
+                rating_color = "#ef4444" if "high" in v.lower() else ("#f59e0b" if "med" in v.lower() else "#0284c7")
+                val_p = Paragraph(f"<font color='{rating_color}'><b>{html.escape(v.upper())}</b></font>", meta_val_style)
+            else:
+                val_p = Paragraph(_format_inline_markdown(v), meta_val_style)
+            key_p = Paragraph(f"<b>{html.escape(k)}:</b>", meta_key_style)
+            meta_rows.append([key_p, val_p])
+            i += 1
+            continue
+
+        # Flush metadata card when leaving metadata section
+        if in_meta and (line.startswith("|") or line.startswith("#") or line.startswith("---") or re.match(r'^\d+\.', line)):
+            flush_meta()
+
+        # Table block detection
+        if line.startswith("|"):
+            tbl_lines = []
+            while i < len(lines) and lines[i].strip().startswith("|"):
+                tbl_lines.append(lines[i].strip())
+                i += 1
+            tbl = _parse_markdown_table(tbl_lines, FONT_NAME)
+            if tbl:
+                story.append(tbl)
+                story.append(Spacer(1, 7))
+            continue
+
+        # Divider detection
+        if re.match(r'^(---|\*\*\*|___)$', line):
+            story.append(HRFlowable(width="100%", thickness=0.8, color=colors.HexColor('#cbd5e1'), spaceBefore=6, spaceAfter=6))
+            i += 1
+            continue
+
+        # Section Headings (Numbered or markdown #/##/###)
+        sec_num_match = re.match(r'^(\d+\.\s+.*)$', line)
+        h_md_match = re.match(r'^(#{1,3})\s+(.*)$', line)
+
+        if sec_num_match and ("Executive Summary" in line or "Root Cause" in line or "Business Risk" in line or "Recommendations" in line or len(line) < 60):
+            heading_text = _format_inline_markdown(sec_num_match.group(1))
+            t_sec = Table([[
+                Paragraph(f"<b>{heading_text}</b>", ParagraphStyle('SecWhite', fontName=FONT_NAME, fontSize=10.5, leading=13, textColor=colors.white))
+            ]], colWidths=[540])
+            t_sec.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#1e293b')),
+                ('LINELEFT', (0, 0), (0, 0), 4, colors.HexColor('#0284c7')),
+                ('TOPPADDING', (0, 0), (-1, -1), 5),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+                ('LEFTPADDING', (0, 0), (-1, -1), 8),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+            ]))
+            story.append(Spacer(1, 6))
+            story.append(t_sec)
+            story.append(Spacer(1, 6))
+            i += 1
+            continue
+
+        if h_md_match:
+            level = len(h_md_match.group(1))
+            heading_text = _format_inline_markdown(h_md_match.group(2))
+            if level <= 2:
+                story.append(Paragraph(f"<b>{heading_text}</b>", h1_style))
+            else:
+                story.append(Paragraph(f"<b>{heading_text}</b>", h2_style))
+            i += 1
+            continue
+
+        # Subheading detection (e.g. "Root Cause Indicators", "Behavioral Pattern Analysis")
+        if not line.startswith(("-", "*", "1.", "2.", "3.", "4.", "5.")) and len(line) < 45 and not line.endswith(".") and ":" not in line:
+            story.append(Paragraph(f"<b>{_format_inline_markdown(line)}</b>", h2_style))
+            i += 1
+            continue
+
+        # Bullets
+        if line.startswith(("- ", "* ")):
+            clean_b = _format_inline_markdown(line[2:])
+            story.append(Paragraph(f"&bull; {clean_b}", bullet_style))
+            i += 1
+            continue
+
+        # Numbered list items
+        num_item_match = re.match(r'^(\d+\.)\s+(.*)$', line)
+        if num_item_match:
+            clean_n = _format_inline_markdown(num_item_match.group(2))
+            story.append(Paragraph(f"<b>{num_item_match.group(1)}</b> {clean_n}", bullet_style))
+            i += 1
+            continue
+
+        # Standard paragraph
+        story.append(Paragraph(_format_inline_markdown(line), body_style))
+        i += 1
+
+    flush_meta()
+    doc.build(story, canvasmaker=NumberedCanvas)
     return buffer.getvalue()

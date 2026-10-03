@@ -76,12 +76,26 @@ def test_export_findings_pdf():
     assert pdf_bytes.startswith(b"%PDF")
 
 def test_export_executive_audit_report_pdf():
-    report_text = """# Executive Audit Report
-## Summary of Analytics Procedures
-- Analyzed 5,000 general ledger and accounts payable entries.
+    report_text = """Audit Analytics Procedure: AN-01 – Duplicate Invoice Payments
+Report Date: October 03, 2026
+Overall Risk Rating: High
+
+| Report Metric | Result |
+|---|---:|
+| Population Tested | 1,000 transactions |
+| Total Spend Tested | $14,846,576.45 |
+
+---
+
+1. Executive Summary & Audit Observation
+FieldAI executed audit procedure **AN-01: Duplicate Payments Detection**.
+
+| Indicator | Evidence | Potential Root Cause |
+|---|---|---|
+| Ineffective duplicate detection | 24 duplicate-related exceptions | ERP lacks matching |
+
 - Found 12 potential duplicate invoice payments totaling $45,000.
 
-### Recommended Action Plan
 1. Suspend identified pending disbursements immediately.
 2. Reconcile vendor statements for matching invoice numbers.
 """
@@ -89,3 +103,4 @@ def test_export_executive_audit_report_pdf():
     assert isinstance(pdf_bytes, bytes)
     assert len(pdf_bytes) > 1000
     assert pdf_bytes.startswith(b"%PDF")
+
