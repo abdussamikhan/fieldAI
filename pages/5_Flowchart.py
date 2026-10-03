@@ -48,8 +48,18 @@ with col_c2:
     orient_key = "TB" if "TB" in orientation else "LR"
 
 with col_c3:
-    detail_mode = st.selectbox("Node Detail Level", options=["Compact Summary (BPMN Style)", "Full Operational Narrative"], index=0)
-    is_compact = "Compact" in detail_mode
+    density_mode = st.selectbox(
+        "Diagram Density & Size",
+        options=["Compact (Recommended)", "Ultra-Compact (Micro)", "Full Operational Narrative"],
+        index=0
+    )
+    if "Ultra" in density_mode:
+        density_key = "micro"
+    elif "Compact" in density_mode:
+        density_key = "compact"
+    else:
+        density_key = "full"
+    is_compact = density_key in ("micro", "compact")
 
 with col_c4:
     spline_choice = st.selectbox("Graphviz Line Routing", options=["Smooth Splines (No Overlaps)", "Polyline Curves", "Orthogonal (Grid)"], index=0)
@@ -69,7 +79,8 @@ cy_elements = generate_cytoscape_elements(
     risks=risks,
     controls=controls,
     lane_by=lane_key,
-    compact=is_compact
+    compact=is_compact,
+    density=density_key
 )
 
 dot_code = generate_dot(
@@ -82,7 +93,8 @@ dot_code = generate_dot(
     orientation=orient_key,
     diff_mode=diff_mode,
     spline_type=spline_key,
-    compact=is_compact
+    compact=is_compact,
+    density=density_key
 )
 
 st.markdown("---")

@@ -5,6 +5,21 @@ from graphs.state import FieldAIState
 from core.db import db
 from core.model_repo import get_process, get_process_master_model
 
+def clean_step_summary(desc: str, density: str = "compact") -> str:
+    """
+    Extracts an executive-level action summary for compact diagram rendering.
+    """
+    if not desc:
+        return ""
+    if density == "full":
+        return desc
+    first_clause = desc.split(".")[0].split(";")[0].strip()
+    words = first_clause.split()
+    max_words = 5 if density == "micro" else 8
+    if len(words) > max_words:
+        return " ".join(words[:max_words])
+    return first_clause
+
 def generate_dot(
     process_name: str,
     version: str,
@@ -15,15 +30,13 @@ def generate_dot(
     orientation: str = "TB", # "TB" or "LR"
     diff_mode: bool = False,
     spline_type: str = "spline", # "spline", "polyline", "ortho"
-    compact: bool = False
+    compact: bool = True,
+    density: str = "compact"
 ) -> str:
     """
     Deterministic Graphviz DOT generator for audit flowcharts and swim lanes.
-    Includes risk badges (R-xx), control badges (C-xx), decision diamonds,
-    unmitigated risk dashed borders, clean word-wrapping, and non-overlapping edges.
+    Includes compact geometry, small Inter typography, tight margins, and non-overlapping edges.
     """
-    date_str = datetime.now().strftime("%d %b %Y")
-    
     # Map lane key
     lane_keys = {
         "role": "responsible_role",
@@ -32,6 +45,11 @@ def generate_dot(
     }
     lane_attr = lane_keys.get(lane_by, "responsible_role")
 
+    nodesep = 0.18 if density == "micro" else (0.24 if density == "compact" else 0.45)
+    ranksep = 0.26 if density == "micro" else (0.32 if density == "compact" else 0.55)
+    swim_margin = 8 if density != "full" else 14
+    swim_fontsize = 8.0 if density == "micro" else (8.5 if density == "compact" else 9.5)
+
     dot_lines = [
         "digraph ProcessFlow {",
         f"  rankdir={orientation};",
@@ -39,21 +57,11 @@ def generate_dot(
         "  compound=true;",
         "  newrank=true;",
         f"  splines={spline_type};",
-        "  nodesep=0.55;",
-        "  ranksep=0.65;",
-        "  pad=0.3;",
-        "  node [fontname=\"Inter,sans-serif\", fontsize=9.5];",
-        "  edge [fontname=\"Inter,sans-serif\", fontsize=8.5, color=\"#475569\", penwidth=1.2];",
-        "",
-        "  // Audit Title Block",
-        "  subgraph cluster_header {",
-        "    style=\"rounded,filled\";",
-        "    color=\"#e2e8f0\";",
-        "    fillcolor=\"#f8fafc\";",
-        "    margin=12;",
-        "    node [shape=plaintext, fontsize=10];",
-        f"    title_node [label=\"FieldAI Master Process Model\\nProcess: {process_name} | Version: {version} | Date: {date_str}\", fontcolor=\"#0f172a\", fontname=\"Inter,sans-serif\"];",
-        "  }",
+        f"  nodesep={nodesep};",
+        f"  ranksep={ranksep};",
+        "  pad=0.15;",
+        "  node [fontname=\"Inter,sans-serif\"];",
+        "  edge [fontname=\"Inter,sans-serif\", fontsize=7.5, color=\"#475569\", penwidth=1.1];",
         ""
     ]
 
@@ -65,8 +73,9 @@ def generate_dot(
             lanes[lane_val] = []
         lanes[lane_val].append(s)
 
-    # Start Node
-    dot_lines.append("  start_node [shape=oval, style=filled, fillcolor=\"#10b981\", color=\"#059669\", fontcolor=\"white\", fontsize=10, margin=\"0.12,0.06\", label=\"Start\"];")
+    # Start Node (Compact Pill)
+    start_fs = 7.5 if density == "micro" else 8.0
+    dot_lines.append(f'  start_node [shape=oval, style=filled, fillcolor="#10b981", color="#059669", fontcolor="white", fontsize={start_fs}, margin="0.05,0.025", label="Start"];')
 
     # Render Clusters (Swim lanes)
     for idx, (lane_name, lane_steps) in enumerate(lanes.items(), 1):
@@ -75,12 +84,12 @@ def generate_dot(
         dot_lines.append(f"    label=\"{lane_name.upper()}\";")
         dot_lines.append("    labelloc=\"t\";")
         dot_lines.append("    labeljust=\"l\";")
-        dot_lines.append("    margin=18;")
+        dot_lines.append(f"    margin={swim_margin};")
         dot_lines.append("    style=\"rounded,filled\";")
         dot_lines.append("    color=\"#cbd5e1\";")
         dot_lines.append("    fillcolor=\"#f8fafc\";")
         dot_lines.append("    fontname=\"Inter,sans-serif\";")
-        dot_lines.append("    fontsize=10;")
+        dot_lines.append(f"    fontsize={swim_fontsize};")
         dot_lines.append("    fontcolor=\"#334155\";")
 
         for s in lane_steps:
@@ -89,13 +98,21 @@ def generate_dot(
             desc = s.get("description", "").strip()
             is_decision = s.get("is_decision", False)
 
-            if compact:
-                summary = desc.split(".")[0].strip() if "." in desc else desc
-                wrap_w = 22 if is_decision else 28
-                wrapped_desc = "\\n".join(textwrap.wrap(summary, width=wrap_w, break_long_words=False))
+            summary = clean_step_summary(desc, density=density)
+            if density == "micro":
+                wrap_w = 16 if is_decision else 18
+                step_fs = 7.0 if is_decision else 7.5
+                step_margin = "0.04,0.02" if is_decision else "0.05,0.025"
+            elif density == "compact":
+                wrap_w = 18 if is_decision else 22
+                step_fs = 7.5 if is_decision else 8.0
+                step_margin = "0.05,0.025" if is_decision else "0.06,0.03"
             else:
-                wrap_w = 22 if is_decision else 30
-                wrapped_desc = "\\n".join(textwrap.wrap(desc, width=wrap_w, break_long_words=False))
+                wrap_w = 22 if is_decision else 28
+                step_fs = 8.5 if is_decision else 9.0
+                step_margin = "0.08,0.04" if is_decision else "0.10,0.06"
+
+            wrapped_desc = "\\n".join(textwrap.wrap(summary, width=wrap_w, break_long_words=False))
 
             # Style attributes
             if diff_mode and s.get("status") == "withdrawn":
@@ -118,9 +135,9 @@ def generate_dot(
             label = f"[{code}]\\n{wrapped_desc}"
 
             if is_decision:
-                dot_lines.append(f'    {node_id} [shape={shape}, style="filled", fillcolor="{fillcolor}", color="{stcolor}", fontcolor="{fontcolor}", fontsize=9, margin="0.08,0.04", label="{label}"];')
+                dot_lines.append(f'    {node_id} [shape={shape}, style="filled", fillcolor="{fillcolor}", color="{stcolor}", fontcolor="{fontcolor}", fontsize={step_fs}, margin="{step_margin}", label="{label}"];')
             else:
-                dot_lines.append(f'    {node_id} [shape={shape}, style="filled,rounded", fillcolor="{fillcolor}", color="{stcolor}", fontcolor="{fontcolor}", fontsize=9.5, margin="0.14,0.08", label="{label}"];')
+                dot_lines.append(f'    {node_id} [shape={shape}, style="filled,rounded", fillcolor="{fillcolor}", color="{stcolor}", fontcolor="{fontcolor}", fontsize={step_fs}, margin="{step_margin}", label="{label}"];')
 
             # Risk badges attached to step
             matched_risks = [r for r in risks if code in r.get("step_codes", [])]
@@ -129,7 +146,7 @@ def generate_dot(
                 r_node_id = f"risk_{node_id}_{r_code.replace('-', '_')}"
                 has_ctrl = bool(r.get("control_codes"))
                 r_border = "dashed" if not has_ctrl else "solid"
-                dot_lines.append(f'    {r_node_id} [shape=box, style="filled,{r_border}", fillcolor="#fee2e2", color="#ef4444", fontcolor="#991b1b", fontsize=8, margin="0.08,0.04", label="{r_code}: Risk"];')
+                dot_lines.append(f'    {r_node_id} [shape=box, style="filled,{r_border}", fillcolor="#fee2e2", color="#ef4444", fontcolor="#991b1b", fontsize=7, margin="0.04,0.02", label="{r_code}: Risk"];')
                 dot_lines.append(f'    {r_node_id} -> {node_id} [style=dotted, color="#ef4444", arrowhead=none, weight=1];')
 
             # Control badges attached to step
@@ -137,7 +154,7 @@ def generate_dot(
             for c in matched_ctrls:
                 c_code = c.get("control_code")
                 c_node_id = f"ctrl_{node_id}_{c_code.replace('-', '_')}"
-                dot_lines.append(f'    {c_node_id} [shape=box, style=filled, fillcolor="#dcfce7", color="#22c55e", fontcolor="#166534", fontsize=8, margin="0.08,0.04", label="{c_code}: Control"];')
+                dot_lines.append(f'    {c_node_id} [shape=box, style=filled, fillcolor="#dcfce7", color="#22c55e", fontcolor="#166534", fontsize=7, margin="0.04,0.02", label="{c_code}: Control"];')
                 dot_lines.append(f'    {node_id} -> {c_node_id} [style=dotted, color="#22c55e", arrowhead=none, weight=1];')
 
         dot_lines.append("  }")
@@ -152,8 +169,9 @@ def generate_dot(
         dot_lines.append(f"  {curr_node} -> {nxt_node};")
         curr_node = nxt_node
 
-    # End Node
-    dot_lines.append("  end_node [shape=oval, style=filled, fillcolor=\"#ef4444\", color=\"#dc2626\", fontcolor=\"white\", fontsize=10, margin=\"0.12,0.06\", label=\"End\"];")
+    # End Node (Compact Pill)
+    end_fs = 7.5 if density == "micro" else 8.0
+    dot_lines.append(f'  end_node [shape=oval, style=filled, fillcolor="#ef4444", color="#dc2626", fontcolor="white", fontsize={end_fs}, margin="0.05,0.025", label="End"];')
     dot_lines.append(f"  {curr_node} -> end_node;")
     dot_lines.append("}")
 
@@ -276,10 +294,11 @@ def generate_cytoscape_elements(
     risks: List[Dict[str, Any]],
     controls: List[Dict[str, Any]],
     lane_by: str = "role",
-    compact: bool = False
+    compact: bool = True,
+    density: str = "compact"
 ) -> List[Dict[str, Any]]:
     """
-    Generates Cytoscape.js compatible graph elements (nodes, compound swimlanes, edges, badges).
+    Generates Cytoscape.js compatible graph elements with compact density scaling.
     """
     lane_keys = {
         "role": "responsible_role",
@@ -322,14 +341,15 @@ def generate_cytoscape_elements(
             desc = s.get("description", "").strip()
             is_decision = s.get("is_decision", False)
 
-            if compact:
-                summary = desc.split(".")[0].strip() if "." in desc else desc
-                wrap_w = 20 if is_decision else 26
-                wrapped_desc = "\n".join(textwrap.wrap(summary, width=wrap_w, break_long_words=False))
+            summary = clean_step_summary(desc, density=density)
+            if density == "micro":
+                wrap_w = 14 if is_decision else 16
+            elif density == "compact":
+                wrap_w = 16 if is_decision else 20
             else:
-                wrap_w = 22 if is_decision else 28
-                wrapped_desc = "\n".join(textwrap.wrap(desc, width=wrap_w, break_long_words=False))
+                wrap_w = 20 if is_decision else 26
 
+            wrapped_desc = "\n".join(textwrap.wrap(summary, width=wrap_w, break_long_words=False))
             node_label = f"[{code}]\n{wrapped_desc}"
 
             elements.append({

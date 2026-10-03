@@ -525,26 +525,24 @@ def render_interactive_cytoscape(
                     'label': 'data(label)',
                     'font-family': 'Inter, sans-serif',
                     'font-weight': 400
-                  }}
-                }},
-                {{
+                   {{
                   selector: 'node.swimlane',
                   style: {{
                     'shape': 'round-rectangle',
                     'background-color': '#1e293b',
                     'background-opacity': 0.65,
-                    'border-width': 1.5,
+                    'border-width': 1.2,
                     'border-color': 'rgba(148, 163, 184, 0.45)',
                     'label': 'data(label)',
                     'text-valign': 'top',
                     'text-halign': 'left',
-                    'text-margin-y': 14,
-                    'text-margin-x': 18,
+                    'text-margin-y': 8,
+                    'text-margin-x': 10,
                     'font-family': 'Inter, sans-serif',
-                    'font-size': 12,
+                    'font-size': 9.5,
                     'font-weight': 500,
                     'color': '#38bdf8',
-                    'padding': 30
+                    'padding': 14
                   }}
                 }},
                 {{
@@ -552,18 +550,18 @@ def render_interactive_cytoscape(
                   style: {{
                     'shape': 'round-rectangle',
                     'background-color': '#ffffff',
-                    'border-width': 1.5,
+                    'border-width': 1.2,
                     'border-color': '#475569',
                     'label': 'data(label)',
                     'color': '#0f172a',
                     'font-family': 'Inter, sans-serif',
-                    'font-size': 10,
+                    'font-size': 8,
                     'font-weight': 400,
                     'text-wrap': 'wrap',
-                    'text-max-width': 180,
+                    'text-max-width': 120,
                     'text-valign': 'center',
                     'text-halign': 'center',
-                    'padding': 12,
+                    'padding': 6,
                     'width': 'label',
                     'height': 'label',
                     'overlay-opacity': 0
@@ -574,18 +572,18 @@ def render_interactive_cytoscape(
                   style: {{
                     'shape': 'diamond',
                     'background-color': '#fffbeb',
-                    'border-width': 1.5,
+                    'border-width': 1.2,
                     'border-color': '#d97706',
                     'label': 'data(label)',
                     'color': '#92400e',
                     'font-family': 'Inter, sans-serif',
-                    'font-size': 9,
+                    'font-size': 7.5,
                     'font-weight': 400,
                     'text-wrap': 'wrap',
-                    'text-max-width': 140,
+                    'text-max-width': 95,
                     'text-valign': 'center',
                     'text-halign': 'center',
-                    'padding': 16,
+                    'padding': 8,
                     'width': 'label',
                     'height': 'label',
                     'overlay-opacity': 0
@@ -596,16 +594,16 @@ def render_interactive_cytoscape(
                   style: {{
                     'shape': 'round-rectangle',
                     'background-color': '#10b981',
-                    'border-width': 1.5,
+                    'border-width': 1.2,
                     'border-color': '#059669',
                     'label': 'data(label)',
                     'color': '#ffffff',
                     'font-family': 'Inter, sans-serif',
-                    'font-size': 11,
+                    'font-size': 8,
                     'font-weight': 500,
-                    'padding': 8,
-                    'width': 70,
-                    'height': 34,
+                    'padding': 3,
+                    'width': 48,
+                    'height': 22,
                     'text-valign': 'center',
                     'text-halign': 'center'
                   }}
@@ -615,16 +613,16 @@ def render_interactive_cytoscape(
                   style: {{
                     'shape': 'round-rectangle',
                     'background-color': '#ef4444',
-                    'border-width': 1.5,
+                    'border-width': 1.2,
                     'border-color': '#dc2626',
                     'label': 'data(label)',
                     'color': '#ffffff',
                     'font-family': 'Inter, sans-serif',
-                    'font-size': 11,
+                    'font-size': 8,
                     'font-weight': 500,
-                    'padding': 8,
-                    'width': 70,
-                    'height': 34,
+                    'padding': 3,
+                    'width': 48,
+                    'height': 22,
                     'text-valign': 'center',
                     'text-halign': 'center'
                   }}
@@ -639,9 +637,9 @@ def render_interactive_cytoscape(
                     'label': 'data(label)',
                     'color': '#991b1b',
                     'font-family': 'Inter, sans-serif',
-                    'font-size': 8.5,
+                    'font-size': 7,
                     'font-weight': 400,
-                    'padding': 5,
+                    'padding': 3,
                     'width': 'label',
                     'height': 'label',
                     'text-valign': 'center',
@@ -653,15 +651,15 @@ def render_interactive_cytoscape(
                   style: {{
                     'shape': 'round-rectangle',
                     'background-color': '#fee2e2',
-                    'border-width': 1.5,
+                    'border-width': 1.2,
                     'border-style': 'dashed',
                     'border-color': '#ef4444',
                     'label': 'data(label)',
                     'color': '#991b1b',
                     'font-family': 'Inter, sans-serif',
-                    'font-size': 8.5,
+                    'font-size': 7,
                     'font-weight': 400,
-                    'padding': 5,
+                    'padding': 3,
                     'width': 'label',
                     'height': 'label',
                     'text-valign': 'center',
@@ -678,9 +676,9 @@ def render_interactive_cytoscape(
                     'label': 'data(label)',
                     'color': '#166534',
                     'font-family': 'Inter, sans-serif',
-                    'font-size': 8.5,
+                    'font-size': 7,
                     'font-weight': 400,
-                    'padding': 5,
+                    'padding': 3,
                     'width': 'label',
                     'height': 'label',
                     'text-valign': 'center',
@@ -691,8 +689,8 @@ def render_interactive_cytoscape(
                   selector: 'node:selected',
                   style: {{
                     'border-color': '#38bdf8',
-                    'border-width': 2.5,
-                    'shadow-blur': 12,
+                    'border-width': 2,
+                    'shadow-blur': 10,
                     'shadow-color': 'rgba(56, 189, 248, 0.4)',
                     'shadow-opacity': 0.8
                   }}
@@ -700,18 +698,18 @@ def render_interactive_cytoscape(
                 {{
                   selector: 'edge.sequenceEdge',
                   style: {{
-                    'width': 2,
+                    'width': 1.6,
                     'line-color': '#38bdf8',
                     'target-arrow-color': '#38bdf8',
                     'target-arrow-shape': 'triangle',
                     'curve-style': defaultCurve,
-                    'arrow-scale': 1
+                    'arrow-scale': 0.85
                   }}
                 }},
                 {{
                   selector: 'edge.badgeEdge',
                   style: {{
-                    'width': 1.2,
+                    'width': 1,
                     'line-style': 'dashed',
                     'line-color': '#94a3b8',
                     'curve-style': 'bezier',
@@ -722,10 +720,10 @@ def render_interactive_cytoscape(
               layout: {{
                 name: 'dagre',
                 rankDir: defaultOrientation,
-                nodeSep: 45,
-                rankSep: 65,
-                edgeSep: 25,
-                padding: 35
+                nodeSep: 22,
+                rankSep: 32,
+                edgeSep: 14,
+                padding: 20
               }}
             }});
 
@@ -761,9 +759,9 @@ def render_interactive_cytoscape(
             // Toolbar action listeners
             document.getElementById('btn-zoom-in').onclick = () => cy.zoom(cy.zoom() * 1.25);
             document.getElementById('btn-zoom-out').onclick = () => cy.zoom(cy.zoom() * 0.8);
-            document.getElementById('btn-fit').onclick = () => cy.fit(null, 35);
+            document.getElementById('btn-fit').onclick = () => cy.fit(null, 20);
             document.getElementById('btn-reset').onclick = () => {{
-              cy.fit(null, 35);
+              cy.fit(null, 20);
               cy.center();
             }};
 
@@ -771,10 +769,10 @@ def render_interactive_cytoscape(
             document.getElementById('btn-layout').onclick = () => {{
               if (currentLayoutName === 'dagre') {{
                 currentLayoutName = 'cose';
-                cy.layout({{ name: 'cose', animate: true, padding: 35, nodeOverlap: 30 }}).run();
+                cy.layout({{ name: 'cose', animate: true, padding: 20, nodeOverlap: 20 }}).run();
               }} else {{
                 currentLayoutName = 'dagre';
-                cy.layout({{ name: 'dagre', rankDir: defaultOrientation, nodeSep: 45, rankSep: 65, animate: true, padding: 35 }}).run();
+                cy.layout({{ name: 'dagre', rankDir: defaultOrientation, nodeSep: 22, rankSep: 32, animate: true, padding: 20 }}).run();
               }}
             }};
 
@@ -803,7 +801,7 @@ def render_interactive_cytoscape(
             }};
 
             // Auto-fit on initial render
-            cy.fit(null, 35);
+            cy.fit(null, 20);
 
           }} catch (err) {{
             console.error('Cytoscape render error:', err);
