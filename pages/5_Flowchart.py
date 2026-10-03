@@ -4,8 +4,8 @@ from core.model_repo import get_process, get_process_master_model
 from core.storage import save_generated_document
 from core.agent_registry import render_deliverable_attribution
 from core.ui import apply_inter_theme
-from agents.flowchart_agent import generate_dot, generate_mermaid, generate_cytoscape_elements
-from analytics.flowchart_viewer import render_interactive_mermaid, render_interactive_cytoscape
+from agents.flowchart_agent import generate_dot, generate_cytoscape_elements
+from analytics.flowchart_viewer import render_interactive_cytoscape
 from exports.bpmn import export_bpmn_xml
 from exports.drawio import export_drawio_xml
 from exports.pdf import export_process_summary_pdf
@@ -85,24 +85,11 @@ dot_code = generate_dot(
     compact=is_compact
 )
 
-mermaid_code = generate_mermaid(
-    process_name=proc["name"] if proc else "Audit Process",
-    version=proc["current_version"] if proc else "v1.0",
-    steps=steps,
-    risks=risks,
-    controls=controls,
-    lane_by=lane_key,
-    orientation=orient_key,
-    compact=is_compact
-)
-
 st.markdown("---")
 
-tab_cytoscape, tab_mermaid, tab_graphviz, tab_source = st.tabs([
+tab_cytoscape, tab_graphviz = st.tabs([
     "⚡ Cytoscape Interactive Canvas (Curved Béziers & Draggable)",
-    "🌟 Vector Diagram (Mermaid Engine)",
-    "📐 Blueprint View (Refined Graphviz)",
-    "📝 Diagram Specifications & Source Code"
+    "📐 Blueprint View (Refined Graphviz)"
 ])
 
 with tab_cytoscape:
@@ -110,28 +97,10 @@ with tab_cytoscape:
     st.caption("Draggable nodes, obstacle-aware smooth curved lines, small Inter font styling, and click-to-inspect audit drawer.")
     render_interactive_cytoscape(cy_elements, orientation=orient_key, curve_style=cy_curve_key, height=650)
 
-with tab_mermaid:
-    st.markdown("#### 🌟 Interactive Vector Swimlane Flowchart")
-    st.caption("Rendered with high-resolution vector SVG. Use the toolbar on top-right to zoom, pan, or download high-resolution SVG/PNG.")
-    render_interactive_mermaid(mermaid_code, height=650)
-
 with tab_graphviz:
     st.markdown("#### 📐 High-Fidelity Graphviz Architecture Blueprint")
     st.caption("Rendered via Graphviz with smooth spline routing, left-aligned swimlane headers, word-wrapped nodes, and proportional decision diamonds.")
     st.graphviz_chart(dot_code, use_container_width=True)
-
-with tab_source:
-    st.markdown("#### 📝 Model Specification Code")
-    c_src1, c_src2, c_src3 = st.columns(3)
-    with c_src1:
-        st.markdown("##### Cytoscape JSON Elements")
-        st.code(json.dumps(cy_elements[:5], indent=2), language="json")
-    with c_src2:
-        st.markdown("##### Mermaid Definition (`.mmd`)")
-        st.code(mermaid_code, language="mermaid")
-    with c_src3:
-        st.markdown("##### Graphviz DOT Definition (`.dot`)")
-        st.code(dot_code, language="dot")
 
 st.divider()
 
