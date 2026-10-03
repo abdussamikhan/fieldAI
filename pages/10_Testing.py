@@ -6,6 +6,7 @@ from core.model_repo import get_process
 from core.agent_registry import render_active_agent_pill, render_deliverable_attribution
 from core.ui import apply_inter_theme
 from graphs.orchestrator import run_task
+from analytics.visualizations import render_test_visualizations, create_metric_card
 
 st.set_page_config(page_title="Audit Testing & Analytics · FieldAI", page_icon="🔬", layout="wide")
 apply_inter_theme()
@@ -97,7 +98,7 @@ with t1:
 
         if run_btn:
             render_active_agent_pill("analytics_agent", f"Executing {selected_an_id} algorithms on full transaction dataset ({len(df_test)} rows)...")
-            with st.spinner(f"Running {selected_an_id} algorithms..."):
+            with st.spinner(f"Running {selected_an_id} algorithms and synthesizing AI audit report..."):
                 res = run_task("run_test", {
                     "task": "run_test",
                     "process_id": process_id,
@@ -110,12 +111,75 @@ with t1:
                     }
                 })
                 t_res = res.get("test_result", {})
-                st.success(f"Execution complete: {t_res.get('summary')}")
-                
-                exc = t_res.get("exceptions")
+                st.session_state["an_last_res"] = t_res
+                st.session_state["an_last_df"] = df_test
+                st.session_state["an_last_id"] = selected_an_id
+
+        an_res = st.session_state.get("an_last_res")
+        if an_res:
+            st.success(f"Execution complete: {an_res.get('summary')}")
+            
+            exc_count = an_res.get("exceptions_count", 0)
+            fin_exp = an_res.get("financial_exposure", 0.0)
+            v_cnt = an_res.get("vendors_impacted", 0)
+            exc_rate = an_res.get("exception_rate_pct", 0.0)
+            exc = an_res.get("exceptions")
+            df_full_ctx = st.session_state.get("an_last_df", df_test)
+
+            km1, km2, km3, km4 = st.columns(4)
+            with km1:
+                create_metric_card("Flagged Exceptions", f"{exc_count:,}", f"{exc_rate}% of population", "#ef4444")
+            with km2:
+                if selected_an_id == "AN-06":
+                    chi_sq = exc.get("chi_square", "N/A") if isinstance(exc, dict) else "N/A"
+                    create_metric_card("Chi-Square Stat", f"{chi_sq}", "Benford deviation", "#f59e0b")
+                else:
+                    create_metric_card("Financial Exposure", f"${fin_exp:,.2f}", "Potential leakage", "#f59e0b")
+            with km3:
+                create_metric_card("Impacted Vendors", f"{v_cnt}", "Active suppliers", "#38bdf8")
+            with km4:
+                create_metric_card("Population Tested", f"{len(df_full_ctx):,}", "Transactions", "#10b981")
+
+            st.write("")
+
+            res_tab1, res_tab2, res_tab3 = st.tabs([
+                "📝 AI Executive Audit Report",
+                "📈 Graphical Data Visualizations",
+                f"📋 Detailed Exception Ledger ({exc_count:,})"
+            ])
+
+            with res_tab1:
+                st.markdown("#### 🤖 AI-Generated Internal Audit Findings Memo")
+                ai_text = an_res.get("ai_report", "")
+                if ai_text:
+                    st.markdown(ai_text)
+                    st.download_button(
+                        label="📥 Download Executive Audit Report (.md)",
+                        data=ai_text,
+                        file_name=f"FieldAI_{selected_an_id}_Audit_Report.md",
+                        mime="text/markdown",
+                        key="dl_ai_report"
+                    )
+                else:
+                    st.info("AI report is being generated...")
+
+            with res_tab2:
+                st.markdown(f"#### 📊 Visual Analytics & Pattern Analysis &bull; {selected_an_id}")
+                df_exc_table = pd.DataFrame(exc) if isinstance(exc, list) else pd.DataFrame()
+                benford_dict = exc if isinstance(exc, dict) else None
+                render_test_visualizations(
+                    test_id=an_res.get("test_id", selected_an_id),
+                    df_exc=df_exc_table,
+                    df_full=df_full_ctx,
+                    benford_res=benford_dict
+                )
+
+            with res_tab3:
+                st.markdown("#### 📋 Flagged Exception Ledger")
                 if isinstance(exc, list) and exc:
-                    st.warning(f"Found {len(exc)} audit exceptions:")
-                    st.dataframe(pd.DataFrame(exc), use_container_width=True)
+                    df_exc_display = pd.DataFrame(exc)
+                    st.caption(f"Displaying **{len(df_exc_display):,}** exception vouchers with full column inspection, sorting, and export:")
+                    st.dataframe(df_exc_display, use_container_width=True, height=400)
                 elif isinstance(exc, dict):
                     st.json(exc)
 

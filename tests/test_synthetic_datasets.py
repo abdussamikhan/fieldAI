@@ -110,3 +110,26 @@ def test_orchestrator_sod_e2e():
     })
     assert "sod_conflicts" in res
     assert len(res["sod_conflicts"]) >= 10
+
+def test_analytics_ai_report_and_metrics():
+    from graphs.orchestrator import run_task
+    p = Path("sample_data/invoices_extract_1000.csv")
+    df = pd.read_csv(p)
+    res = run_task("run_test", {
+        "task": "run_test",
+        "process_id": 1,
+        "user_id": 1,
+        "test_request": {
+            "test_id": "AN-01",
+            "test_type": "analytics",
+            "dataframe": df
+        }
+    })
+    assert "test_result" in res
+    t_res = res["test_result"]
+    assert "ai_report" in t_res
+    assert len(t_res["ai_report"]) > 100
+    assert "Executive Summary" in t_res["ai_report"]
+    assert t_res["financial_exposure"] > 0
+    assert t_res["vendors_impacted"] > 0
+    assert t_res["exception_rate_pct"] > 0
