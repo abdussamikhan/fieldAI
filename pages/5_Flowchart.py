@@ -105,13 +105,9 @@ tab_cytoscape, tab_graphviz = st.tabs([
 ])
 
 with tab_cytoscape:
-    st.markdown("#### Editable Flowchart")
-    st.caption("Draggable nodes, obstacle-aware smooth curved lines, small Inter font styling, and click-to-inspect audit drawer.")
     render_interactive_cytoscape(cy_elements, orientation=orient_key, curve_style=cy_curve_key, height=650)
 
 with tab_graphviz:
-    st.markdown("#### 📐 High-Fidelity Graphviz Architecture Blueprint")
-    st.caption("Rendered via Graphviz with smooth spline routing, left-aligned swimlane headers, word-wrapped nodes, and proportional decision diamonds.")
     st.graphviz_chart(dot_code, use_container_width=False)
 
 st.divider()
