@@ -525,7 +525,9 @@ def render_interactive_cytoscape(
                     'label': 'data(label)',
                     'font-family': 'Inter, sans-serif',
                     'font-weight': 400
-                   {{
+                  }}
+                }},
+                {{
                   selector: 'node.swimlane',
                   style: {{
                     'shape': 'round-rectangle',

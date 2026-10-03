@@ -112,7 +112,7 @@ with tab_cytoscape:
 with tab_graphviz:
     st.markdown("#### 📐 High-Fidelity Graphviz Architecture Blueprint")
     st.caption("Rendered via Graphviz with smooth spline routing, left-aligned swimlane headers, word-wrapped nodes, and proportional decision diamonds.")
-    st.graphviz_chart(dot_code, use_container_width=True)
+    st.graphviz_chart(dot_code, use_container_width=False)
 
 st.divider()
 
@@ -120,7 +120,7 @@ st.divider()
 st.subheader("📥 Export Deliverables")
 st.caption("Download flowcharts in standard editable engineering and diagramming formats:")
 
-exp1, exp2, exp3, exp4, exp5, exp6 = st.columns(6)
+exp1, exp2, exp3, exp4, exp5 = st.columns(5)
 
 with exp1:
     bpmn_xml = export_bpmn_xml(
@@ -190,15 +190,6 @@ with exp3:
 
 with exp4:
     st.download_button(
-        "Mermaid (.mmd)",
-        data=mermaid_code,
-        file_name=f"{proc.get('code_prefix', 'PROC')}_flow.mmd",
-        mime="text/plain",
-        use_container_width=True
-    )
-
-with exp5:
-    st.download_button(
         "Graphviz DOT (.dot)",
         data=dot_code,
         file_name=f"{proc.get('code_prefix', 'PROC')}_flow.dot",
@@ -206,7 +197,7 @@ with exp5:
         use_container_width=True
     )
 
-with exp6:
+with exp5:
     st.download_button(
         "Cytoscape (.json)",
         data=json.dumps(cy_elements, indent=2),
