@@ -6,7 +6,7 @@ def render_interactive_mermaid(mermaid_code: str, height: int = 650) -> None:
     """
     Renders an interactive, vector-based Mermaid.js flowchart with pan-and-zoom
     controls, high-resolution SVG/PNG downloads, and clean Inter typography.
-    Handles hidden-tab mounting gracefully via ResizeObserver.
+    Uses native GPU CSS transform pan/zoom to prevent matrix inversion bugs on hidden tabs.
     """
     # Sanitize string for embedding inside JavaScript template literal
     escaped_code = mermaid_code.replace("\\", "\\\\").replace("`", "\\`").replace("$", "\\$")
@@ -20,7 +20,6 @@ def render_interactive_mermaid(mermaid_code: str, height: int = 650) -> None:
       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
       <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
-      <script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
       <style>
         * {{
           box-sizing: border-box;
@@ -88,22 +87,43 @@ def render_interactive_mermaid(mermaid_code: str, height: int = 650) -> None:
           border-radius: 4px;
           border: 1px solid rgba(148, 163, 184, 0.15);
         }}
-        #mermaid-container {{
+        #viewport-stage {{
           width: 100%;
           height: 100%;
+          overflow: hidden;
+          position: relative;
           display: flex;
           align-items: center;
           justify-content: center;
+          cursor: grab;
+          user-select: none;
+        }}
+        #viewport-stage:active {{
+          cursor: grabbing;
+        }}
+        #panzoom-layer {{
+          transform-origin: center center;
+          transition: transform 0.05s ease-out;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          height: 100%;
         }}
         #mermaid-target {{
-          width: 100%;
-          height: 100%;
           display: flex;
           align-items: center;
           justify-content: center;
+          width: 100%;
+          height: 100%;
         }}
-        svg {{
-          max-width: none !important;
+        #mermaid-target svg {{
+          max-width: 95% !important;
+          max-height: 90% !important;
+          width: auto !important;
+          height: auto !important;
+          display: block !important;
+          filter: drop-shadow(0 4px 12px rgba(0,0,0,0.35));
         }}
         .error-box {{
           padding: 24px;
@@ -128,64 +148,53 @@ def render_interactive_mermaid(mermaid_code: str, height: int = 650) -> None:
           <button class="tool-btn" id="btn-png" title="Download PNG">📥 PNG</button>
         </div>
         <div id="hint">💡 Drag canvas to pan &bull; Scroll wheel to zoom</div>
-        <div id="mermaid-container">
-          <div id="mermaid-target"></div>
+        <div id="viewport-stage">
+          <div id="panzoom-layer">
+            <div id="mermaid-target"></div>
+          </div>
         </div>
       </div>
 
       <script>
         const rawCode = `{escaped_code}`;
-        let panZoomInstance = null;
-        let svgElement = null;
+        let isPanning = false;
+        let startX = 0, startY = 0;
+        let panX = 0, panY = 0;
+        let zoom = 1.0;
+
+        const stage = document.getElementById('viewport-stage');
+        const layer = document.getElementById('panzoom-layer');
+
+        function applyTransform() {{
+          if (layer) {{
+            layer.style.transform = `translate(${{panX}}px, ${{panY}}px) scale(${{zoom}})`;
+          }}
+        }}
 
         mermaid.initialize({{
           startOnLoad: false,
-          theme: 'neutral',
+          theme: 'dark',
           securityLevel: 'loose',
           fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-          fontSize: 12,
+          themeVariables: {{
+            darkMode: true,
+            background: 'transparent',
+            primaryColor: '#1e293b',
+            primaryTextColor: '#f8fafc',
+            primaryBorderColor: '#64748b',
+            lineColor: '#38bdf8',
+            secondaryColor: '#334155',
+            tertiaryColor: '#0f172a'
+          }},
           flowchart: {{
             curve: 'basis',
-            useMaxWidth: false,
+            useMaxWidth: true,
             htmlLabels: true,
             nodeSpacing: 45,
             rankSpacing: 60,
             padding: 15
           }}
         }});
-
-        function setupPanZoom() {{
-          if (!svgElement) return;
-          const rect = document.getElementById('diagram-wrapper').getBoundingClientRect();
-          if (rect.width <= 10 || rect.height <= 10) return; // Tab still hidden
-
-          try {{
-            if (panZoomInstance) {{
-              panZoomInstance.destroy();
-              panZoomInstance = null;
-            }}
-
-            svgElement.style.width = '100%';
-            svgElement.style.height = '100%';
-
-            panZoomInstance = svgPanZoom(svgElement, {{
-              zoomEnabled: true,
-              controlIconsEnabled: false,
-              fit: true,
-              center: true,
-              minZoom: 0.1,
-              maxZoom: 10,
-              zoomScaleSensitivity: 0.25,
-              dblClickZoomEnabled: false
-            }});
-
-            panZoomInstance.resize();
-            panZoomInstance.fit();
-            panZoomInstance.center();
-          }} catch (err) {{
-            console.warn('svgPanZoom setup deferral:', err);
-          }}
-        }}
 
         async function renderDiagram() {{
           try {{
@@ -194,60 +203,131 @@ def render_interactive_mermaid(mermaid_code: str, height: int = 650) -> None:
             const container = document.getElementById('mermaid-target');
             container.innerHTML = svg;
 
-            svgElement = container.querySelector('svg');
-            if (svgElement) {{
-              setupPanZoom();
+            // Bind panning gestures
+            stage.addEventListener('mousedown', (e) => {{
+              if (e.target.closest('#toolbar') || e.target.closest('button')) return;
+              isPanning = true;
+              startX = e.clientX - panX;
+              startY = e.clientY - panY;
+              stage.style.cursor = 'grabbing';
+            }});
 
-              // Toolbar bindings
-              document.getElementById('btn-zoom-in').onclick = () => {{
-                if (panZoomInstance) panZoomInstance.zoomIn();
-              }};
-              document.getElementById('btn-zoom-out').onclick = () => {{
-                if (panZoomInstance) panZoomInstance.zoomOut();
-              }};
-              document.getElementById('btn-reset').onclick = () => {{
-                if (panZoomInstance) {{
-                  panZoomInstance.resetZoom();
-                  panZoomInstance.fit();
-                  panZoomInstance.center();
-                }} else {{
-                  setupPanZoom();
-                }}
-              }};
-              document.getElementById('btn-fit').onclick = () => {{
-                if (panZoomInstance) {{
-                  panZoomInstance.fit();
-                  panZoomInstance.center();
-                }} else {{
-                  setupPanZoom();
-                }}
-              }};
+            window.addEventListener('mousemove', (e) => {{
+              if (!isPanning) return;
+              panX = e.clientX - startX;
+              panY = e.clientY - startY;
+              applyTransform();
+            }});
 
-              // Download SVG
-              document.getElementById('btn-svg').onclick = () => {{
-                const serializer = new XMLSerializer();
-                let source = serializer.serializeToString(svgElement);
-                if (!source.match(/^<svg[^>]+xmlns="http\\:\\/\\/www\\.w3\\.org\\/2000\\/svg"/)) {{
-                  source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
-                }}
-                const blob = new Blob([source], {{ type: 'image/svg+xml;charset=utf-8' }});
-                const url = URL.createObjectURL(blob);
+            window.addEventListener('mouseup', () => {{
+              isPanning = false;
+              stage.style.cursor = 'grab';
+            }});
+
+            // Wheel zoom
+            stage.addEventListener('wheel', (e) => {{
+              e.preventDefault();
+              const factor = e.deltaY < 0 ? 1.15 : 0.87;
+              zoom = Math.min(Math.max(zoom * factor, 0.2), 6.0);
+              applyTransform();
+            }}, {{ passive: false }});
+
+            // Toolbar buttons
+            document.getElementById('btn-zoom-in').onclick = () => {{
+              zoom = Math.min(zoom * 1.25, 6.0);
+              applyTransform();
+            }};
+            document.getElementById('btn-zoom-out').onclick = () => {{
+              zoom = Math.max(zoom * 0.8, 0.2);
+              applyTransform();
+            }};
+            document.getElementById('btn-reset').onclick = () => {{
+              zoom = 1.0;
+              panX = 0;
+              panY = 0;
+              applyTransform();
+            }};
+            document.getElementById('btn-fit').onclick = () => {{
+              zoom = 1.0;
+              panX = 0;
+              panY = 0;
+              applyTransform();
+            }};
+
+            // Download SVG
+            document.getElementById('btn-svg').onclick = () => {{
+              const svgElement = container.querySelector('svg');
+              if (!svgElement) return;
+              const serializer = new XMLSerializer();
+              let source = serializer.serializeToString(svgElement);
+              if (!source.match(/^<svg[^>]+xmlns="http\\:\\/\\/www\\.w3\\.org\\/2000\\/svg"/)) {{
+                source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+              }}
+              const blob = new Blob([source], {{ type: 'image/svg+xml;charset=utf-8' }});
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = 'FieldAI_Process_Flowchart.svg';
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              setTimeout(() => URL.revokeObjectURL(url), 1000);
+            }};
+
+            // Download PNG via canvas
+            document.getElementById('btn-png').onclick = () => {{
+              const svgElement = container.querySelector('svg');
+              if (!svgElement) return;
+              const serializer = new XMLSerializer();
+              const svgString = serializer.serializeToString(svgElement);
+              const svgBlob = new Blob([svgString], {{ type: 'image/svg+xml;charset=utf-8' }});
+              const blobURL = URL.createObjectURL(svgBlob);
+              const image = new Image();
+              image.onload = () => {{
+                const canvas = document.createElement('canvas');
+                const scale = 2.0; // High resolution
+                const w = (svgElement.viewBox && svgElement.viewBox.baseVal && svgElement.viewBox.baseVal.width) || svgElement.clientWidth || 1000;
+                const h = (svgElement.viewBox && svgElement.viewBox.baseVal && svgElement.viewBox.baseVal.height) || svgElement.clientHeight || 1200;
+                canvas.width = w * scale;
+                canvas.height = h * scale;
+                const context = canvas.getContext('2d');
+                context.fillStyle = '#0f172a';
+                context.fillRect(0, 0, canvas.width, canvas.height);
+                context.drawImage(image, 0, 0, canvas.width, canvas.height);
+                const pngUrl = canvas.toDataURL('image/png');
                 const a = document.createElement('a');
-                a.href = url;
-                a.download = 'FieldAI_Process_Flowchart.svg';
+                a.href = pngUrl;
+                a.download = 'FieldAI_Process_Flowchart.png';
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(blobURL), 1000);
               }};
+              image.src = blobURL;
+            }};
 
-              // Download PNG via canvas
-              document.getElementById('btn-png').onclick = () => {{
-                const serializer = new XMLSerializer();
-                const svgString = serializer.serializeToString(svgElement);
-                const svgBlob = new Blob([svgString], {{ type: 'image/svg+xml;charset=utf-8' }});
-                const URL = window.URL || window.webkitURL || window;
-                const blobURL = URL.createObjectURL(svgBlob);
-                const image = new Image();
+          }} catch (err) {{
+            console.error('Mermaid render error:', err);
+            document.getElementById('mermaid-target').innerHTML = `
+              <div class="error-box">
+                <h4 style="margin: 0 0 8px 0; color: #f87171;">Diagram Rendering Notice</h4>
+                <div style="font-size: 12px; color: #cbd5e1;">${{err.message || 'Syntax or rendering error in flowchart specification.'}}</div>
+              </div>
+            `;
+          }}
+        }}
+
+        if (document.readyState === 'loading') {{
+          document.addEventListener('DOMContentLoaded', renderDiagram);
+        }} else {{
+          renderDiagram();
+        }}
+      </script>
+    </body>
+    </html>
+    """
+
+    components.html(html_content, height=height + 15, scrolling=False)
                 image.onload = () => {{
                   const canvas = document.createElement('canvas');
                   const scale = 2.0; // High resolution
