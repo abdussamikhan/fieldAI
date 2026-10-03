@@ -105,7 +105,7 @@ tab_cytoscape, tab_graphviz = st.tabs([
 ])
 
 with tab_cytoscape:
-    st.markdown("#### ⚡ Cytoscape.js Process Flow Canvas (Dagre + Bézier Curves)")
+    st.markdown("#### Editable Flowchart")
     st.caption("Draggable nodes, obstacle-aware smooth curved lines, small Inter font styling, and click-to-inspect audit drawer.")
     render_interactive_cytoscape(cy_elements, orientation=orient_key, curve_style=cy_curve_key, height=650)
 
