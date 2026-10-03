@@ -1,7 +1,7 @@
 ---
 title: "FieldAI – Product Requirements Document (PRD)"
 subtitle: "Multi-agent AI audit fieldwork assistant · LangGraph · PostgreSQL · Python · Streamlit on Render"
-author: "ACCELERAT"
+author: "Sami Associates"
 date: "2 October 2026 · Version 0.2 – Draft for approval (Render hosting)"
 ---
 
@@ -12,7 +12,7 @@ date: "2 October 2026 · Version 0.2 – Draft for approval (Render hosting)"
 | Product | FieldAI – AI Audit Fieldwork Assistant |
 | Document | Product Requirements Document (PRD), derived from *BRD – AI Audit Fieldwork Assistant* v0.1 |
 | Version | 0.2 – Draft for approval. v0.2 moves hosting from Streamlit Community Cloud + Supabase to Render (web service, background worker, cron job and PostgreSQL) |
-| Prepared by | ACCELERAT |
+| Prepared by | Sami Associates |
 | Approver | Product owner (Sami) |
 | Status | Awaiting review. Code is built only after this PRD is approved. |
 

@@ -123,9 +123,9 @@ def render_nav_card(title: str, desc: str, border_color: str):
     st.markdown(card_html, unsafe_allow_html=True)
 
 with row1_col1:
-    render_nav_card("1. Capture & Interview", "Record audio walkthroughs with consent, transcribe speakers, and capture live interview prompts.", "#0284c7")
-    if st.button("Open Capture Screen →", key="btn_nav_capture"):
-        st.switch_page("pages/2_Capture.py")
+    render_nav_card("1. Meeting Capture & Interview", "Record audio walkthroughs with consent, transcribe speakers, and capture live interview prompts.", "#0284c7")
+    if st.button("Open Meeting Capture Screen →", key="btn_nav_capture"):
+        st.switch_page("pages/2_Meeting_Capture.py")
 
 with row1_col2:
     render_nav_card("2. Master Model & Flowchart", "Review sequential process table, multi-lane swim lanes (Role/Dept/System), and risk/control badges.", "#10b981")
@@ -141,19 +141,19 @@ st.markdown("<br/>", unsafe_allow_html=True)
 
 row2_col1, row2_col2, row2_col3 = st.columns(3)
 with row2_col1:
-    render_nav_card("4. Document Reconciliation", "Compare spoken walkthroughs against written SOPs with 5-category gap analysis.", "#8b5cf6")
-    if st.button("Review Documents & SOPs →", key="btn_nav_docs"):
-        st.switch_page("pages/8_Documents.py")
+    render_nav_card("4. RAG Documents Reconciliation", "Compare spoken walkthroughs against written SOPs with 5-category gap analysis.", "#8b5cf6")
+    if st.button("Review RAG Documents & SOPs →", key="btn_nav_docs"):
+        st.switch_page("pages/8_RAG_Documents.py")
 
 with row2_col2:
-    render_nav_card("5. Analytics & Testing", "Run unit-tested analytics algorithms (duplicates, splits, Benford's law), SoD, and process mining.", "#ec4899")
-    if st.button("Run Audit Tests →", key="btn_nav_tests"):
-        st.switch_page("pages/10_Testing.py")
+    render_nav_card("5. Testing & Analytics", "Run unit-tested analytics algorithms (duplicates, splits, Benford's law), SoD, and process mining.", "#ec4899")
+    if st.button("Run Testing & Analytics →", key="btn_nav_tests"):
+        st.switch_page("pages/10_Testing_&_Analytics.py")
 
 with row2_col3:
-    render_nav_card("6. CAE Executive Dashboard", "Executive visibility into audit coverage heat maps, control design adequacy, and exception counts.", "#06b6d4")
+    render_nav_card("6. CAE Dashboard", "Executive visibility into audit coverage heat maps, control design adequacy, and exception counts.", "#06b6d4")
     if st.button("Open CAE Dashboard →", key="btn_nav_dash"):
-        st.switch_page("pages/12_Dashboard.py")
+        st.switch_page("pages/12_CAE_Dashboard.py")
 
 st.markdown("<br/>", unsafe_allow_html=True)
 
@@ -164,11 +164,24 @@ with row3_col1:
         st.switch_page("pages/15_Centralized_Storage.py")
 
 with row3_col2:
-    render_nav_card("8. Walkthrough Prep & Question Pack", "Generate bilingual interview packs, scoping metrics, and save/load them from central database storage.", "#f97316")
-    if st.button("Open Question Packs →", key="btn_nav_prep"):
-        st.switch_page("pages/9_Prep.py")
+    render_nav_card("8. Walkthrough Preparation & Scoping", "Generate bilingual interview packs, scoping metrics, and save/load them from central database storage.", "#f97316")
+    if st.button("Open Preparation & Scoping →", key="btn_nav_prep"):
+        st.switch_page("pages/9_Preparation_&_Scoping.py")
 
 with row3_col3:
-    render_nav_card("9. Findings & QA Review", "Draft 5 Cs findings, manage review notes, and export professional Word (.docx) audit memos.", "#6366f1")
-    if st.button("Review Findings →", key="btn_nav_findings"):
-        st.switch_page("pages/11_Findings.py")
+    render_nav_card("9. Findings & QA", "Draft 5 Cs findings, manage review notes, and export professional Word (.docx) audit memos.", "#6366f1")
+    if st.button("Review Findings & QA →", key="btn_nav_findings"):
+        st.switch_page("pages/11_Findings_&_QA.py")
+
+st.markdown("<br/>", unsafe_allow_html=True)
+
+row4_col1, row4_col2, row4_col3 = st.columns(3)
+with row4_col1:
+    render_nav_card("10. Auditee Confirmation", "Secure walkthrough verification and clarification interface for client process owners.", "#3b82f6")
+    if st.button("Open Auditee Confirmation →", key="btn_nav_confirm"):
+        st.switch_page("pages/13_Auditee_Confirmation.py")
+
+with row4_col2:
+    render_nav_card("11. System Admin", "Configure user permissions, audit trail logs, sampling tables, and platform credentials.", "#64748b")
+    if st.button("Open System Admin →", key="btn_nav_admin"):
+        st.switch_page("pages/14_System_Admin.py")

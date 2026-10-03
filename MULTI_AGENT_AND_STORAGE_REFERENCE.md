@@ -38,7 +38,7 @@ All agents are registered in [`core/agent_registry.py`](file:///c:/projects/fiel
 
 Whenever multi-agent pipelines run, FieldAI displays real-time execution banners informing the user which agent is currently working on screen:
 
-### Walkthrough Ingestion Pipeline ([`pages/2_Capture.py`](file:///c:/projects/fieldai/pages/2_Capture.py))
+### Walkthrough Ingestion Pipeline ([`pages/2_Meeting_Capture.py`](file:///c:/projects/fieldai/pages/2_Meeting_Capture.py))
 When **"🚀 Transcribe & Process Walkthrough"** is triggered, an expandable execution box displays the active agents in sequence:
 1. `🎙️ Active Agent: transcription_agent` — Ingesting audio buffer and diarizing speaker turns
 2. `📝 Active Agent: summary_agent` — Synthesizing walkthrough dialogue and extracting PBC items
@@ -46,23 +46,23 @@ When **"🚀 Transcribe & Process Walkthrough"** is triggered, an expandable exe
 4. `🛡️ Active Agent: risk_control_agent` — Mapping inherent risks & identifying mitigating controls
 5. `⚖️ Active Agent: change_set_agent` — Performing entity resolution against master process model
 
-### Document Ingestion & Gap Reconciliation ([`pages/8_Documents.py`](file:///c:/projects/fieldai/pages/8_Documents.py))
+### Document Ingestion & Gap Reconciliation ([`pages/8_RAG_Documents.py`](file:///c:/projects/fieldai/pages/8_RAG_Documents.py))
 When **"Parse Document & Run Reconciliation"** is clicked:
 1. `📄 Active Agent: document_agent` — Ingesting document text, parsing sections, and registering chunks
 2. `⚖️ Active Agent: reconciliation_agent` — Reconciling interview testimonies against documented policy criteria
 
-### Walkthrough Preparation & Scoping ([`pages/9_Prep.py`](file:///c:/projects/fieldai/pages/9_Prep.py))
+### Walkthrough Preparation & Scoping ([`pages/9_Preparation_&_Scoping.py`](file:///c:/projects/fieldai/pages/9_Preparation_&_Scoping.py))
 When **"⚡ Generate Bilingual Walkthrough Question Pack"** is clicked:
 - `📋 Active Agent: prep_agent` — Analyzing prior open items, risk library, and formulating bilingual questions
 
-### Continuous Testing Hub ([`pages/10_Testing.py`](file:///c:/projects/fieldai/pages/10_Testing.py))
+### Continuous Testing Hub ([`pages/10_Testing_&_Analytics.py`](file:///c:/projects/fieldai/pages/10_Testing_&_Analytics.py))
 During execution of testing procedures:
 - `📈 Active Agent: analytics_agent` — Executing algorithm on full transaction dataset
 - `🛡️ Active Agent: sod_agent` — Evaluating user privilege matrix against toxic SoD rule catalog
 - `🔄 Active Agent: process_mining_agent` — Reconstructing transaction pathways and identifying bypasses
 - `📑 Active Agent: evidence_agent` — Evaluating voucher attributes against audit criteria
 
-### Findings Formulation & QA Review ([`pages/11_Findings.py`](file:///c:/projects/fieldai/pages/11_Findings.py))
+### Findings Formulation & QA Review ([`pages/11_Findings_&_QA.py`](file:///c:/projects/fieldai/pages/11_Findings_&_QA.py))
 - `⚠️ Active Agent: findings_agent` — Compiling test exceptions into formal 5 Cs findings
 - `🎯 Active Agent: qa_review_agent` — Evaluating file completeness against IIA QA standards
 
@@ -74,20 +74,20 @@ Every screen delivering an audit artifact prominently displays a standardized at
 
 | Screen / Page | Artifact Displayed | Attributed Agent(s) |
 | :--- | :--- | :--- |
-| **`pages/2_Capture.py`** | Interview Transcripts & Diarization | `transcription_agent` |
-| **`pages/2_Capture.py`** | Live Co-Pilot Interview Prompts | `copilot_agent` |
+| **`pages/2_Meeting_Capture.py`** | Interview Transcripts & Diarization | `transcription_agent` |
+| **`pages/2_Meeting_Capture.py`** | Live Co-Pilot Interview Prompts | `copilot_agent` |
 | **`pages/3_Review_Changes.py`** | Master Model Change Set & Entity Resolution | `change_set_agent` |
 | **`pages/4_Process_Table.py`** | Sequential Process Steps & Role Allocation | `process_extraction_agent` |
 | **`pages/5_Flowchart.py`** | Multi-Lane Swimlane Diagram & BPMN Deliverables | `flowchart_agent` |
 | **`pages/6_RCM.py`** | Risk & Control Matrix & Design Adequacy Ratings | `rcm_agent` & `risk_control_agent` |
 | **`pages/7_Audit_Program.py`** | Fieldwork Audit Program & Sample Sizes | `audit_program_agent` |
-| **`pages/8_Documents.py`** | Said vs Documented 5-Category Gap Analysis | `reconciliation_agent` & `document_agent` |
-| **`pages/8_Documents.py`** | Grounded In-Document Answers & Citations | `doc_qa_agent` |
-| **`pages/9_Prep.py`** | Bilingual Walkthrough Question Pack & Scoping | `prep_agent` |
-| **`pages/10_Testing.py`** | Data Analytics / SoD / Process Mining Exceptions | `analytics_agent` / `sod_agent` / `process_mining_agent` |
-| **`pages/11_Findings.py`** | Structured 5 Cs Audit Observations | `findings_agent` |
-| **`pages/11_Findings.py`** | IIA Methodology Quality Assurance Review | `qa_review_agent` |
-| **`pages/12_Dashboard.py`** | Executive Audit Telemetry & Heat Map Metrics | `monitoring_agent` |
+| **`pages/8_RAG_Documents.py`** | Said vs Documented 5-Category Gap Analysis | `reconciliation_agent` & `document_agent` |
+| **`pages/8_RAG_Documents.py`** | Grounded In-Document Answers & Citations | `doc_qa_agent` |
+| **`pages/9_Preparation_&_Scoping.py`** | Bilingual Walkthrough Question Pack & Scoping | `prep_agent` |
+| **`pages/10_Testing_&_Analytics.py`** | Data Analytics / SoD / Process Mining Exceptions | `analytics_agent` / `sod_agent` / `process_mining_agent` |
+| **`pages/11_Findings_&_QA.py`** | Structured 5 Cs Audit Observations | `findings_agent` |
+| **`pages/11_Findings_&_QA.py`** | IIA Methodology Quality Assurance Review | `qa_review_agent` |
+| **`pages/12_CAE_Dashboard.py`** | Executive Audit Telemetry & Heat Map Metrics | `monitoring_agent` |
 
 ---
 

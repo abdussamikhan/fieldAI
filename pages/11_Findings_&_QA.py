@@ -5,10 +5,12 @@ from core.model_repo import get_process
 from core.audit_log import log_audit
 from core.storage import save_generated_document
 from core.agent_registry import render_active_agent_pill, render_deliverable_attribution
+from core.ui import apply_inter_theme
 from exports.word import export_findings_word
 from graphs.orchestrator import run_task
 
 st.set_page_config(page_title="Findings & QA Review · FieldAI", page_icon="📝", layout="wide")
+apply_inter_theme()
 
 if not st.session_state.get("user"):
     st.warning("Please sign in from the main page.")

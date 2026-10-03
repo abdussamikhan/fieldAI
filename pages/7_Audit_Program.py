@@ -6,8 +6,10 @@ from core.audit_log import log_audit
 from core.storage import save_generated_document
 from core.agent_registry import render_deliverable_attribution
 from exports.excel import export_audit_program_excel
+from core.ui import apply_inter_theme
 
 st.set_page_config(page_title="Audit Program · FieldAI", page_icon="📜", layout="wide")
+apply_inter_theme()
 
 if not st.session_state.get("user"):
     st.warning("Please sign in from the main page.")

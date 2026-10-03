@@ -63,7 +63,7 @@ class NumberedCanvas(canvas.Canvas):
             
             # Running Footer
             self.line(36, 42, 576, 42)
-            self.drawString(36, 32, "Confidential | Internal Audit Technology | ACCELERAT | Production Architecture Baseline v1.0")
+            self.drawString(36, 32, "Confidential | Internal Audit Technology | Sami Associates | Production Architecture Baseline v1.0")
             page_text = f"Page {self._pageNumber} of {page_count}"
             self.drawRightString(576, 32, page_text)
             self.restoreState()
@@ -209,7 +209,7 @@ def generate_brd_prd_pdf(output_path: str):
          Paragraph("Target Environment:", style_table_cell_code), Paragraph("Render Cloud (Docker + PostgreSQL)", style_table_cell)],
         [Paragraph("Orchestration:", style_table_cell_code), Paragraph("LangGraph Multi-Agent StateGraph", style_table_cell),
          Paragraph("AI Engine:", style_table_cell_code), Paragraph("DeepSeek Flash & ElevenLabs Scribe", style_table_cell)],
-        [Paragraph("Author / Practice:", style_table_cell_code), Paragraph("ACCELERAT Audit Technology", style_table_cell),
+        [Paragraph("Author / Practice:", style_table_cell_code), Paragraph("Sami Associates Audit Technology", style_table_cell),
          Paragraph("Product Approver:", style_table_cell_code), Paragraph("Product Owner (Sami)", style_table_cell)],
     ]
     t_meta = Table(meta_data, colWidths=[95, 175, 105, 165])
@@ -650,6 +650,6 @@ def generate_brd_prd_pdf(output_path: str):
 
 if __name__ == "__main__":
     out_dir = Path(__file__).resolve().parent.parent
-    pdf_filename = "FieldAI_Comprehensive_BRD_PRD.pdf"
+    pdf_filename = sys.argv[1] if len(sys.argv) > 1 else "FieldAI_Comprehensive_BRD_PRD.pdf"
     target_path = str(out_dir / pdf_filename)
     generate_brd_prd_pdf(target_path)

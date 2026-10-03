@@ -4,9 +4,11 @@ from core.db import db
 from core.model_repo import get_process, get_process_master_model
 from core.storage import save_generated_document
 from core.agent_registry import render_deliverable_attribution
+from core.ui import apply_inter_theme
 from exports.excel import export_rcm_excel
 
 st.set_page_config(page_title="Risk-Control Matrix · FieldAI", page_icon="🛡️", layout="wide")
+apply_inter_theme()
 
 if not st.session_state.get("user"):
     st.warning("Please sign in from the main page.")

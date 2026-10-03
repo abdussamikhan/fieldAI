@@ -62,7 +62,7 @@ class NumberedCanvas(canvas.Canvas):
             
             # Running Footer
             self.line(36, 42, 576, 42)
-            self.drawString(36, 32, "Confidential | Internal Audit Technology | ACCELERAT | Version 1.0 Production Specification")
+            self.drawString(36, 32, "Confidential | Internal Audit Technology | Sami Associates | Version 1.0 Production Specification")
             page_text = f"Page {self._pageNumber} of {page_count}"
             self.drawRightString(576, 32, page_text)
             self.restoreState()
@@ -196,7 +196,7 @@ def create_prd_pdf(output_path: str):
          Paragraph("Product Stage:", style_table_cell_code), Paragraph("Production / Active Deployment", style_table_cell)],
         [Paragraph("System Version:", style_table_cell_code), Paragraph("v1.0 (Full Multi-Agent Architecture)", style_table_cell),
          Paragraph("Target Deployment:", style_table_cell_code), Paragraph("Render Cloud (Docker + PostgreSQL)", style_table_cell)],
-        [Paragraph("Prepared By:", style_table_cell_code), Paragraph("ACCELERAT Internal Audit Tech Practice", style_table_cell),
+        [Paragraph("Prepared By:", style_table_cell_code), Paragraph("Sami Associates Internal Audit Tech Practice", style_table_cell),
          Paragraph("Product Owner:", style_table_cell_code), Paragraph("Sami (Leadership Review Approved)", style_table_cell)],
         [Paragraph("Core Technologies:", style_table_cell_code), Paragraph("LangGraph | Streamlit | PostgreSQL | ElevenLabs | DeepSeek", style_table_cell),
          Paragraph("Date of Specification:", style_table_cell_code), Paragraph("October 2026", style_table_cell)],

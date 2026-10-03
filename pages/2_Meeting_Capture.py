@@ -4,9 +4,11 @@ from core.storage import save_file
 from core.jobs import enqueue_job
 from core.audit_log import log_audit
 from core.agent_registry import render_active_agent_pill, render_deliverable_attribution
+from core.ui import apply_inter_theme
 from graphs.orchestrator import run_task
 
 st.set_page_config(page_title="Meeting Capture · FieldAI", page_icon="🎙️", layout="wide")
+apply_inter_theme()
 
 if not st.session_state.get("user"):
     st.warning("Please sign in from the main page.")

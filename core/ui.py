@@ -46,6 +46,126 @@ b, strong, th,
     white-space: nowrap !important;
     direction: ltr !important;
 }
+
+/* Sidebar Menu Tile Renaming */
+[data-testid="stSidebarNav"] span[label="app"],
+[data-testid="stSidebarNav"] span[label="App"] {
+    font-size: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+}
+[data-testid="stSidebarNav"] span[label="app"]::after,
+[data-testid="stSidebarNav"] span[label="App"]::after {
+    content: "Login" !important;
+    font-size: 0.875rem !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    font-weight: 400 !important;
+    visibility: visible !important;
+}
+
+[data-testid="stSidebarNav"] span[label="Capture"] {
+    font-size: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+}
+[data-testid="stSidebarNav"] span[label="Capture"]::after {
+    content: "Meeting Capture" !important;
+    font-size: 0.875rem !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    font-weight: 400 !important;
+    visibility: visible !important;
+}
+
+[data-testid="stSidebarNav"] span[label="Documents"] {
+    font-size: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+}
+[data-testid="stSidebarNav"] span[label="Documents"]::after {
+    content: "RAG Documents" !important;
+    font-size: 0.875rem !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    font-weight: 400 !important;
+    visibility: visible !important;
+}
+
+[data-testid="stSidebarNav"] span[label="Prep"] {
+    font-size: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+}
+[data-testid="stSidebarNav"] span[label="Prep"]::after {
+    content: "Preparation & Scoping" !important;
+    font-size: 0.875rem !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    font-weight: 400 !important;
+    visibility: visible !important;
+}
+
+[data-testid="stSidebarNav"] span[label="Testing"] {
+    font-size: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+}
+[data-testid="stSidebarNav"] span[label="Testing"]::after {
+    content: "Testing & Analytics" !important;
+    font-size: 0.875rem !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    font-weight: 400 !important;
+    visibility: visible !important;
+}
+
+[data-testid="stSidebarNav"] span[label="Findings"] {
+    font-size: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+}
+[data-testid="stSidebarNav"] span[label="Findings"]::after {
+    content: "Findings & QA" !important;
+    font-size: 0.875rem !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    font-weight: 400 !important;
+    visibility: visible !important;
+}
+
+[data-testid="stSidebarNav"] span[label="Dashboard"] {
+    font-size: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+}
+[data-testid="stSidebarNav"] span[label="Dashboard"]::after {
+    content: "CAE Dashboard" !important;
+    font-size: 0.875rem !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    font-weight: 400 !important;
+    visibility: visible !important;
+}
+
+[data-testid="stSidebarNav"] span[label="Confirm"] {
+    font-size: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+}
+[data-testid="stSidebarNav"] span[label="Confirm"]::after {
+    content: "Auditee Confirmation" !important;
+    font-size: 0.875rem !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    font-weight: 400 !important;
+    visibility: visible !important;
+}
+
+[data-testid="stSidebarNav"] span[label="Admin"] {
+    font-size: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+}
+[data-testid="stSidebarNav"] span[label="Admin"]::after {
+    content: "System Admin" !important;
+    font-size: 0.875rem !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    font-weight: 400 !important;
+    visibility: visible !important;
+}
 </style>
 """
 

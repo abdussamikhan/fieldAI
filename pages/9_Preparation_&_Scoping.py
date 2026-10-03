@@ -12,9 +12,11 @@ from core.prep_repo import (
     delete_question_pack
 )
 from core.agent_registry import render_active_agent_pill, render_deliverable_attribution
+from core.ui import apply_inter_theme
 from graphs.orchestrator import run_task
 
-st.set_page_config(page_title="Meeting Preparation · FieldAI", page_icon="📋", layout="wide")
+st.set_page_config(page_title="Preparation & Scoping · FieldAI", page_icon="📋", layout="wide")
+apply_inter_theme()
 
 if not st.session_state.get("user"):
     st.warning("Please sign in from the main page.")

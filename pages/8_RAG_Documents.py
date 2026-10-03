@@ -4,9 +4,11 @@ from core.db import db
 from core.storage import save_file
 from core.model_repo import get_process
 from core.agent_registry import render_active_agent_pill, render_deliverable_attribution
+from core.ui import apply_inter_theme
 from graphs.orchestrator import run_task
 
-st.set_page_config(page_title="Documents & Reconciliation · FieldAI", page_icon="📄", layout="wide")
+st.set_page_config(page_title="RAG Documents · FieldAI", page_icon="📄", layout="wide")
+apply_inter_theme()
 
 if not st.session_state.get("user"):
     st.warning("Please sign in from the main page.")
