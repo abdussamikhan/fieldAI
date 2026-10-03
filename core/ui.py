@@ -180,11 +180,39 @@ div[data-testid="stSidebarNavItems"] > div > span,
     visibility: visible !important;
 }
 
+/* Minimize excessive top margin across all screens */
+.block-container,
+[data-testid="stMainBlockContainer"] {
+    padding-top: 2rem !important;
+    padding-bottom: 3rem !important;
+}
+
+/* Allow clicks to pass through transparent header area to elements beneath */
+header[data-testid="stHeader"],
+header[data-testid="stHeader"] * {
+    pointer-events: none !important;
+    background: transparent !important;
+}
+
+header[data-testid="stHeader"] button,
+header[data-testid="stHeader"] button *,
+header[data-testid="stHeader"] a,
+header[data-testid="stHeader"] [role="button"],
+[data-testid="stExpandSidebarButton"],
+[data-testid="stExpandSidebarButton"] *,
+[data-testid="stSidebarCollapseButton"],
+[data-testid="stSidebarCollapseButton"] *,
+[data-testid="stMainMenu"],
+[data-testid="stMainMenu"] * {
+    pointer-events: auto !important;
+}
+
 /* Hide developer file-change / rerun prompt in header */
 [data-testid="stStatusWidget"] {
     display: none !important;
 }
 </style>
+
 
 
 """
