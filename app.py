@@ -106,17 +106,6 @@ else:
         if st.button("Log Out", use_container_width=True):
             st.session_state.user = None
             st.rerun()
-        
-        st.divider()
-        
-        # Active Engagement & Process Indicator
-        eng = db.fetch_one("SELECT * FROM engagements WHERE id = %s;", (st.session_state.current_engagement_id,))
-        proc = db.fetch_one("SELECT * FROM processes WHERE id = %s;", (st.session_state.current_process_id,))
-        
-        st.markdown(f"**Engagement:** {eng['name'] if eng else 'None'}")
-        st.markdown(f"**Process:** {proc['name'] if proc else 'None'} (`{proc['code_prefix'] if proc else 'P2P'}`)")
-        st.markdown(f"**Version:** `{proc['current_version'] if proc else 'v1.0'}`")
-        st.divider()
 
     pg = st.navigation(nav_sections)
     pg.run()
