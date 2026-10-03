@@ -86,7 +86,8 @@ with t1:
             st.metric("Date Span", f"{min_date} to {max_date}")
 
         with st.expander(f"Preview Dataset ({len(df_test):,} Records · Centralized Storage Sample)", expanded=False):
-            st.dataframe(df_test.head(10), use_container_width=True)
+            st.caption(f"Displaying complete dataset of **{len(df_test):,}** transactions. Scroll vertically to browse all rows, sort columns, or search.")
+            st.dataframe(df_test, use_container_width=True, height=450)
 
         col_run1, col_run2 = st.columns([1, 2])
         with col_run1:
@@ -163,7 +164,8 @@ with t2:
             st.metric("Covered Departments", dept_cnt)
 
         with st.expander(f"Preview User Access Matrix ({total_assignments} assignments across {unique_users} users)", expanded=False):
-            st.dataframe(df_sod_data.head(10), use_container_width=True)
+            st.caption(f"Displaying complete user access matrix of **{total_assignments}** role assignments across **{unique_users}** users. Scroll vertically to inspect all rows, sort columns, or search.")
+            st.dataframe(df_sod_data, use_container_width=True, height=450)
 
     if st.button("🚀 Run SoD Conflict Analysis on User Access Matrix", type="primary", key="btn_run_sod"):
         render_active_agent_pill("sod_agent", "Evaluating user privilege matrix against toxic SoD rule catalog...")
@@ -242,7 +244,8 @@ with t3:
             st.metric("Distinct Lifecycle Activities", tot_acts)
 
         with st.expander(f"Preview ERP Event Log ({tot_events:,} events across {tot_cases} cases)", expanded=False):
-            st.dataframe(df_pm_data.head(10), use_container_width=True)
+            st.caption(f"Displaying complete ERP event log with all **{tot_events:,}** events across **{tot_cases}** cases. Scroll vertically to inspect all rows, sort columns, or search.")
+            st.dataframe(df_pm_data, use_container_width=True, height=450)
 
     if st.button("🚀 Mine Process Variants from ERP Event Log", type="primary", key="btn_run_pm"):
         render_active_agent_pill("process_mining_agent", "Reconstructing transaction pathways and identifying bypasses...")
